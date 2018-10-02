@@ -22,9 +22,7 @@
 (in-package "PICTURES")
 
 
-(export '(restore-graphic) 'pictures)
-
-; - - - - - - - - - - - generic functions - - - - - - -	
+; - - - - - - - - - - - generic functions - - - - - - -
 ; - - - - - - - - nested format - - - - - - - -
 (defmethod restore-graphic ((format (eql :nested-forms)) &optional (stream *standard-input*))
   (let (graphics-list eof)
@@ -32,7 +30,7 @@
 	(let ((form (read stream nil)))
 	  (setf form (scan-form form))
 	  (when (make-form-p form)
-	    (setf graphics-list 
+	    (setf graphics-list
 		  (cons (make-graphic form) graphics-list)))
 	  graphics-list)
 	(loop until eof do
@@ -40,7 +38,7 @@
 		(unless (eq form 'last)
 		  (setf form (scan-form form)))
 		  (when (and form (make-form-p form))
-		    (setf graphics-list 
+		    (setf graphics-list
 			  (cons (make-graphic form) graphics-list)))
 		  (when (eq form 'last)
 		    (setf eof t)))
@@ -52,4 +50,3 @@
 ;  (handle-embedded-forms (cdr form))
 ;  (apply (car form) (cdr form))
   )
-

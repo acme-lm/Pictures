@@ -19,25 +19,10 @@
 ;;; Authors: Delmar Hager, James Dutton, Teri Crowe
 ;;; Contributors: Kerry Kimbrough, Patrick Hogan, Eric Mielke
 
-(in-package "PICTURES")
+(in-package :pictures)
 
 
-(DEFPARAMETER  *vector-cache* nil)
-
-(export '(
-	  t11 t12 t21 t22 t31 t32
-	  make-transform
-	  compose-transform
-	  copy-transform
-	  move-transform
-	  radians
-	  rotate-transform
-	  scale-transform
-	  scale-point
-	  transform-point
-	  transform-point-seq
-	  )
-	'pictures)
+(defparameter  *vector-cache* nil)
 
 ;;; Transform Class Definition:
 
@@ -48,31 +33,31 @@
 		:reader   t11
                 :initform 1.0
 		:documentation "Position (1,1) in transform matrix")
-   
+
    (t12		:type     float
                 :initarg  :t12
  		:reader   t12
 		:initform 0.0
 		:documentation "Position (1,2) in transform matrix")
-   
+
    (t21		:type     float
                 :initarg  :t21
 		:reader   t21
                 :initform 0.0
 		:documentation "Position (2,1) in transform matrix")
-   
+
    (t22		:type     float
                 :initarg  :t22
 		:reader   t22
                 :initform 1.0
 		:documentation "Position (2,2) in transform matrix")
-   
+
    (t31		:type     float
                 :initarg  :t31
 		:reader   t31
                 :initform 0.0
 		:documentation "Position (3,1) in transform matrix")
-   
+
    (t32		:type     float
                 :initarg  :t32
 		:reader   t32
@@ -87,7 +72,7 @@
 
 (defun make-transform (&rest initargs
                          &key &allow-other-keys)
-  (declare (values transform))
+
 
 
   (apply #'make-instance 'transform initargs))
@@ -108,7 +93,7 @@
 (defun compose-transform (transform-1 transform-2
                           &optional (result transform-2))
   (declare (type (or null transform) transform-1 transform-2 result))
-  (declare (values transform))
+
 
   (cond ((null transform-1)				; T-1 is the identity
          (copy-transform transform-2 result))		;   Just use T-2
@@ -129,7 +114,7 @@
 
 (defun copy-transform (transform-1 transform-2)
   (declare (type (or null transform) transform-1 transform-2))
-  (declare (values transform-2))
+
 
   (cond ((eq transform-1 transform-2))			; They are already identical!
         (transform-1					; T-1 is not identity
@@ -148,7 +133,7 @@
 
 
 (defmethod move-transform ((transform transform) delta-x delta-y)
-  (declare (values transform))
+
 
   (with-slots (t31 t32) transform			; Just translate the transform
     (psetq t31 (+ t31 delta-x)
@@ -160,7 +145,7 @@
 ;   Print a transform object
 
 (defmethod print-object :after ((transform transform) stream)
-  (declare (values transform))
+
   (with-slots (t11 t12 t21 t22 t31 t32) transform
     (format stream "[|~6,2f  ~6,2f  ~6,2f||~6,2f  ~6,2f  ~6,2f||~6,2f  ~6,2f  ~6,2f|]"
             t11 t12 0.0 t21 t22 0.0 t31 t32 1.0)))
@@ -170,7 +155,7 @@
 ;  Convert degrees to radians using the same floating point precision
 
 (defmacro radians (degrees)
- 
+
  `(* ,degrees (/ pi  180)))
 
 
@@ -181,7 +166,7 @@
 
 (defmethod rotate-transform ((transform transform) angle
                                &optional (fixed-x 0) (fixed-y 0))
-  (declare (values transform))
+
 
   (let* ((cos-angle (cos angle))			; Implementation note:
          (sin-angle (sin angle))			;  (cis angle) is NOT faster on Explorer!
@@ -206,7 +191,7 @@
 
 (defmethod scale-transform ((transform transform) scale-x scale-y
                   &optional (fixed-x 0) (fixed-y 0))
-  (declare (values transform))
+
 
   (let* ((origin-fixed (and (zerop fixed-x) (zerop fixed-y)))	; Translate only if fixed point is not origin
          (trans-x (if origin-fixed
@@ -228,7 +213,7 @@
 (defun scale-point (transform x-distance y-distance)
   (declare (type (or null transform) transform))
   (declare (type wcoord x-distance y-distance))
-  (declare (values new-x-distance new-y-distance))
+
 
   (if transform							; Identity?
       (with-slots (t11 t12 t21 t22) transform				;  No,
@@ -246,7 +231,7 @@
 (DEFMETHOD  transform-point ((transform transform) x y)
   (declare (type (or null transform) transform))
   (declare (type wcoord x y))
-  (declare (values new-x new-y))
+
   (with-slots (t11 t12 t21 t22 t31 t32) transform	;  No,
     (values (+ (* x t11) (* y t21) t31)		; new-x
 	    (+ (* x t12) (* y t22) t32)))	; new-y
@@ -255,21 +240,21 @@
 (DEFMETHOD  transform-point (( transform t) x y)
   (declare (type (or null transform) transform))
   (declare (type wcoord x y))
-  (declare (values new-x new-y))				; new-y
+  				; new-y
       (values x y))
 
 ;Function: transform-point-seq
 ;  Destructively changes the point-seq by applying TRANSFORM to the
-;  given points.  
+;  given points.
 
 
 (defun transform-point-seq (transform  point-vector &optional (result point-vector))
-  
+
   (declare (type (or null transform) transform))
-  (declare (type (or null vector) point-vector )) 
+  (declare (type (or null vector) point-vector ))
   (with-vector transformed-vector
 	       (LET* ((vector-length (LENGTH point-vector)))	; How many pairs are there?
-		 
+
 		 (IF   transform		; Identity transform?
 		   (with-slots (t11 t12 t21 t22 t31 t32) transform	; No, transform the points
 		     (let ((x11 t11)		; Store transform in local vars for efficiency
@@ -278,7 +263,7 @@
 			   (x22 t22)
 			   (x31 t31)
 			   (x32 t32))
-		       
+
 		       (let (x-i y-i)		; Transform the vectors
 			 (IF (AND (= x11 x22 1) (= x12 x21 0))
 			     (do ((i 0 (+ i 2)))
@@ -292,7 +277,7 @@
 				 (+  y-i  x32)
 				 transformed-vector)
 			       )
-			     
+
 			     (do ((i 0 (+ i 2)))
 				 ((>= i  vector-length) nil)
 			       (setf x-i (ELT point-vector i)	; Save next point in temporaries
@@ -332,7 +317,7 @@
                           &optional (result x))
   (declare (type transform x))
   (declare (type (or null transform) result))
-  (declare (values transform))
+
 
   (unless result			; Create a result transform if necessary
     (setf result (make-transform)))
@@ -354,18 +339,3 @@
                z32 (+ (* temp31 y12) (* x32 y22) y32)))))
 
   result)					; Return RESULT transform
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

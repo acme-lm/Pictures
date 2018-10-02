@@ -22,75 +22,6 @@
 (in-package "PICTURES")
 
 
-(export '(
-	  graphic-events-enabled-p 
-	  view
-	  view-scale
-	  view-scale-x
-          view-scale-y
-	  make-view
-	  display
-	  gravity-point
-	  view-gravity
-	  view-pan
-	  view-show-world
-	  view-show-region
-	  view-damage
-	  view-damaged-p
-	  view-graphic
-	  view-pixel-size
-	  view-highlight-color
-	  refresh-view
-	  repair-view
-	  view-scale-point
-	  transform-point
-	  transform-x
-	  transform-y
-	  view-transform-vector
-	  view-untransform-point
-	  view-untransform-x
-	  view-untransform-y
-	  view-zoom
-	  world-extent
-	  view-draw-arc
-	  view-draw-filled-arc
-	  view-draw-line
-	  view-draw-polypoint
-	  view-draw-polyline
-	  view-draw-polygon
-	  view-draw-filled-polygon
-	  view-draw-image
-	  view-draw-rectangle
-	  view-draw-filled-rectangle
-	  view-draw-text
-	  view-draw-image-text
-	  view-draw-char
-	  view-draw-image-char
-	  handle-event
-	  graphic-pick
-	  graphic-within
-	  view-selection
-	  view-add-selection
-	  view-remove-selection
-	  view-clear-selection
-	  view-select-graphic
-	  view-unselect-graphic
-	  view-select-region
-	  view-unselect-region
-	  view-x-pan
-	  view-y-pan
-	  view-pan-left
-	  view-pan-right
-	  view-pan-up
-	  view-pan-down
-	  untransform-point
-	  view-orientation
-	  origin-x
-	  orinin-y
-	  )
-	'pictures)
-
-
 (DEFPARAMETER  *an-extent-rectangle* (make-extent-rect))
 
 ;Private Macro: valid-xcoord
@@ -105,12 +36,12 @@
   "Make a new view.
 The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-X ORIGIN-Y GRAPHIC"
 
-  (declare (values view))
+
   (apply #'make-contact 'view options))
 
 ;Basic contact methods:
 
-	
+
 
 (DEFUN get-contact-background (view)
   (IF view
@@ -133,20 +64,20 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
     (LET ((black (screen-black-pixel (contact-screen view)))
 	    (white (screen-white-pixel (contact-screen view)))
 	    (background (get-contact-background view)))
-	
-	(IF 
+
+	(IF
 	  (EQL  background black)
-	    (PROGN 
+	    (PROGN
 	      (SETF (gcontext-foreground default-gcontext) white )
 	      (SETF (gcontext-background default-gcontext) black ))
-	    (PROGN 
+	    (PROGN
 	      (SETF (gcontext-foreground default-gcontext) black )
 	      (SETF (gcontext-background default-gcontext) white )))
 	(SETF highlight-color (LOGXOR (gcontext-foreground default-gcontext)(gcontext-background default-gcontext)))
-       
-      
+
+
       )
-    
+
     (LET ((selection-scene (make-selection-scene)))
       (SETF (graphic-view selection-scene)  view)	;attach the view-selection to a view
       (SETF (view-selection-scene view) selection-scene)
@@ -157,7 +88,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
       (with-slots (elements parent) selection-scene
 	(SETF (FILL-POINTER elements) 0)
 	(SETF parent nil))
-      
+
       (with-slots (view-graphic) view
 	(UNLESS view-graphic
 	  (SETF view-graphic (make-scene :sensitivity :subselectable))
@@ -172,7 +103,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 	(MULTIPLE-VALUE-BIND (new-gravity-x new-gravity-y)(gravity-point view gravity)
 	  (SETF origin-x (- origin-x (- new-gravity-x gravity-x)))
 	  (SETF origin-y (- origin-y (- new-gravity-y gravity-y)))))))
-	  
+
 ;Method: display
 ;  Display the view contact after an exposure, etc.
 
@@ -184,7 +115,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 	  (scale-y (view-scale-y view))
 	  (scale (view-scale view))
 	  (pixel (view-pixel-size view)))
-    
+
     (when view-graphic
       (IF (AND (= x 0) (= y 0) (= width (contact-width view)) (= height (contact-height view)))
 	  (PROGN
@@ -235,17 +166,13 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 ;  world coordinates) after the view window is resized.
 
 (defmethod view-gravity ((view view))
-  (declare (values (member :northwest :north  :northeast
-                           :west      :center :east
-                           :southwest :south  :southeast)))
+
 
   (with-slots (gravity) view
     gravity))
 
 (defmethod (setf view-gravity) (gravity (view view))
-  (declare (values (member :northwest :north  :northeast
-                           :west      :center :east
-                           :southwest :south  :southeast)))
+
 
   (with-slots ((view-gravity gravity)) view
     (setf view-gravity gravity)))
@@ -256,14 +183,14 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 
 (DEFMETHOD (SETF view-scale) (x (view view))
   (MULTIPLE-VALUE-BIND (pan-x pan-y) (gravity-point view (view-gravity view))
-	 
+
     (SETF (view-scale-x view) (* (SIGNUM (view-scale-x view)) x)
 	  (view-scale-y view) (* (SIGNUM (view-scale-y view)) x)
 	  (slot-value (grabber-rect-transform view) 't11) (* (SIGNUM (view-scale-x view)) (/ 1 x) )
 	  (slot-value (grabber-rect-transform view) 't22) (* (SIGNUM (view-scale-y view)) (/ 1 x) ))
     (view-pan view pan-x pan-y))
   x)
-	   
+
 ;Method: view-pan
 ;  Change the VIEW so that the given point (X, Y) (in world coordinates) is located
 ;  according to the given ALIGN point of the view window.
@@ -301,10 +228,10 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
                               origin-y y))
         (:southeast	(setf origin-x (- x wc-width)
                               origin-y y))))))
-                    
+
 
 (DEFMETHOD view-show-world ((view view))
- 
+
   (LET ((extent (world-extent (view-graphic view))))
     (UNLESS (= (- (extent-rect-xmax extent)(extent-rect-xmin extent))
 	       (- (extent-rect-ymax extent) (extent-rect-ymin extent)) 0)
@@ -326,14 +253,14 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 				  (- (extent-rect-xmax extent)(extent-rect-xmin extent)))
 			       (/ (contact-height view)
 				  (- (extent-rect-ymax extent) (extent-rect-ymin extent))))))
-  
-  (LET* 
+
+  (LET*
     ((extent-xmin (extent-rect-xmin extent))
      (extent-ymin (extent-rect-ymin extent))
      (extent-width (- (extent-rect-xmax extent)(extent-rect-xmin extent)) )
      (extent-height (-  (extent-rect-ymax extent)(extent-rect-ymin extent))))
     (MULTIPLE-VALUE-BIND (x y) (CASE (view-gravity view)
-				 
+
 				 (:southwest  (VALUES  extent-xmin
 						       extent-ymin  ))
 				 (:northwest  (VALUES  extent-xmin
@@ -353,9 +280,9 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 				 (:east       (VALUES  (+ extent-xmin extent-width)
 						       (+ extent-ymin  (/ extent-height 2.0))))
 				 (t           (VALUES   extent-xmin
-							extent-ymin))) 
+							extent-ymin)))
       (view-pan view x y))
-    
+
     ))
 
 ;Method: view-damage
@@ -376,42 +303,42 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 	    (UNLESS (extent-valid-p (CAR damaged-region))
 	      (graphic-extent (CAR damaged-region)))
 	    (world-extent (car damaged-region) new-damage))
-	  
+
           (setf (extent-rect-xmin new-damage) (first  damaged-region)
 		(extent-rect-ymin new-damage) (second damaged-region)
 		(extent-rect-xmax new-damage) (+ (first damaged-region)
 						 (third  damaged-region))
 		(extent-rect-ymax new-damage) (+ (second damaged-region)
 						 (fourth damaged-region))))
-      (WHEN 
+      (WHEN
 	(not (or
 		   (> (extent-rect-xmin new-damage) (extent-rect-xmax view-extent))
 		   (> (extent-rect-ymin new-damage) (extent-rect-ymax view-extent))
 		   (< (extent-rect-xmax new-damage) (extent-rect-xmin view-extent))
 		   (< (extent-rect-ymax new-damage) (extent-rect-ymin view-extent))))
-	
+
 	(dotimes (i damage-count)		; Calculate min-union and max-intersect
 	  (let ((union-area     (rect-union new-damage (AREF damage i)))
 		(intersect-area (rect-intersect new-damage (AREF damage i))))
-	    
+
 	    (when (or (null min-union)
 		      (< union-area min-union-area))
 	      (setf min-union-area union-area)
 	      (setf min-union i))
-	    
+
 	    (when (> intersect-area max-intersect-area)
 	      (setf max-intersect-area intersect-area)
 	      (setf max-intersect i))))
-	
+
 	(cond
 	  ((> max-intersect-area 0)		; It intersected with something
 	   (rect-merge new-damage		; Use the largest such intersection
 		       (aref damage max-intersect)))
-	  
+
 	  ((< damage-count max-damage)		; No intersection, room for more?
 	   (incf damage-count)			; Yes, add it to the list
 	   (setf (aref damage (- damage-count 1)) new-damage))
-	  
+
 	  (t					; Otherwise, just use the smallest union
 	   (rect-merge new-damage
 		       (aref damage min-union))))))))
@@ -423,7 +350,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 ;  is ignored; otherwise, the new value is ignored.
 
 (defmethod view-damaged-p ((view view))
-  (declare (values boolean))
+
 
   (with-slots (damage-count) view
     (eql damage-count 0)))
@@ -431,20 +358,20 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 
 (defmethod (setf view-damaged-p) (damaged (view view))
   (declare (type boolean damaged))
-  (declare (values boolean))
+
 
   (with-slots (damage-count) view
     (unless damaged (setf damage-count 0))))
 
 
-;Method: view-graphic 
+;Method: view-graphic
 ;  Returns or changes the SCENE associated with the given VIEW.
 
 
 
 (defmethod  (setf view-graphic)  :after (view-graphic (view view)  )
   (declare (type (or null graphic) view-graphic))
-  (declare (values view-graphic))
+
   (with-slots ((graphic view-graphic) )  view
     (SETF graphic view-graphic)
     (with-slots (views) view-graphic
@@ -455,7 +382,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 ;  Return the world-coordinate size of a pixel for the given VIEW.
 
 (defmethod view-pixel-size ((view view))
-  (declare (values pixel-size))
+
 
   (LET ( (scale (view-scale view)))
     (/ 1 scale)))
@@ -483,7 +410,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 (DEFMETHOD refresh-view :after ((view view))
       (draw-graphic (view-selection-scene view) view)
  )
-	
+
 ;Method: repair-view
 ;  Redraws any damaged regions in the VIEW and clears any damages.
 
@@ -504,16 +431,16 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 	    (rotatef clip-xmin clip-xmax))
 	  (WHEN (< clip-ymax clip-ymin)
 	    (rotatef clip-ymin clip-ymax))			; View coordinates are third quadrant
-	  
+
           (clear-area view
                       :x clip-xmin
                       :y clip-ymin
                       :width  (- clip-xmax clip-xmin -1)
                       :height (- clip-ymax clip-ymin -1))
           (draw-graphic-clipped view-graphic view		; Draw view-graphic within damaged area
-                        (- xmin (* 2 pixel))		
+                        (- xmin (* 2 pixel))
                         (- ymin (* 2 pixel))
-                        (- xmax xmin (- (* 4 pixel))) 
+                        (- xmax xmin (- (* 4 pixel)))
                         (- ymax ymin (- (* 4 pixel))))
           (display-force-output (contact-display view))
           (setf (gcontext-clip-mask default-gcontext)	; Get rid of clip-mask
@@ -521,7 +448,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 
     (setf damage-count 0))				; Clear the damages
   (draw-graphic (view-selection-scene view) view)		; Draw the highlight objects
-  ) 
+  )
 
 
 
@@ -534,7 +461,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 (defmethod view-scale-point ((view view) x-distance y-distance
                                        &optional graphic-world-transform)
   (declare (type (or null transform) graphic-world-transform))
-  (declare (values (new-x-distance new-y-distance)))
+
 
   (with-slots ( height) view
     (LET ((scale-x (view-scale-x view))
@@ -543,14 +470,14 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
         (scale-point graphic-world-transform x-distance y-distance)
       (values (floor (* world-x scale-x))
               (floor (* world-y scale-y)))))))
-  
-           
+
+
 ;Method: transform-point
 ;  Convert the given X and Y object coordinates to view coordinates for the
 ;  given VIEW.  If GRAPHIC-WORLD-TRANSFORM is given, apply it to the point before
 ;  converting to view coordinates.
 (defmethod transform-point ((view view) x y )
-  (declare (values new-x new-y))
+
 
   (with-slots (origin-x origin-y scale-x scale-y height) view
 
@@ -558,12 +485,12 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
               (FLOOR (- height  (* (- y origin-y) scale-y))))))
 
 (defmethod transform-x ((view view) x  )
-  (declare (values new-x new-y))
+
   (with-slots (origin-x origin-y scale-x height) view
      (floor (* (- x origin-x) scale-x))))
 
 (defmethod transform-y ((view view)  y )
-  (declare (values  new-y))
+
   (with-slots (origin-x origin-y scale-y height) view
     (floor (- height (* (- y origin-y) scale-y)))))
 
@@ -575,7 +502,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 	    ((>= i (LENGTH vertices)))
 	  (SETF (elt vertices i) (round (* (- (ELT vertices i) origin-x) scale-x)))
 	  (SETF (ELT vertices (1+ i))       (- height (round (* (- (ELT vertices (1+ i)) origin-y) scale-y)))))
-	
+
 	(DO ((i 0 (+ i 2)))
 	    ((>= i (LENGTH vertices)))
 	  (SETF (elt vertices i) (floor (* (- (ELT vertices i) origin-x) scale-x)))
@@ -584,16 +511,16 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 
 
 (defmethod view-untransform-point ((view view) window-x  window-y)
-  (DECLARE (VALUES world-x world-y))
-  (VALUES 
+
+  (VALUES
     (+ (origin-x view) (/ window-x (view-scale-x view)))		;change to world coordinates
     (- (+ (origin-y view) (/ (contact-height view) (view-scale-y view)))
        (/ window-y (view-scale-y view))))  ;change from 4th quadrant view
   )                                                                    ;coordinates to 1st quadrant world coordinate
 
 (defmethod untransform-point ((view view) window-x  window-y)
-  (DECLARE (VALUES world-x world-y))
-  (VALUES 
+
+  (VALUES
     (+ (origin-x view) (/ window-x (view-scale-x view)))		;change to world coordinates
     (- (+ (origin-y view) (/ (contact-height view) (view-scale-y view)))
        (/ window-y (view-scale-y view))))  ;change from 4th quadrant view
@@ -601,13 +528,13 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 
 
 (defmethod view-untransform-x ((view view) window-x )
-  (DECLARE (VALUES world-x ))						;change to X world coordinates
+  						;change to X world coordinates
     (+ (origin-x view) (/ window-x (view-scale-x view)))			;change from 4th quadrant view coordinates
     )									;to 1st quadrant world coordinate
 
 
 (defmethod view-untransform-y ((view view) window-y )
-  (DECLARE (VALUES world-y ))
+
     (- (+ (origin-y view) (/ (contact-height view) (view-scale-y view)))	;change to Y world coordinates
        (/ window-y (view-scale-y view))))					;change from 4th quadrant view coordinates
 
@@ -634,7 +561,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 	(PROGN
 	  (SETF fixed-point-x (FIRST fixed-point))
 	  (SETF fixed-point-y (SECOND fixed-point)))
-	
+
 	(MULTIPLE-VALUE-SETQ (fixed-point-x fixed-point-y)	; Remember the fixed point
 	  (gravity-point view fixed-point)))
       (if absolute-p
@@ -652,7 +579,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 
 (defmethod world-extent ((view view) &optional result-extent)
   (declare (type (or null extent-rect) result-extent))
-  (declare (values (or null extent-rect)))
+
 
   (with-slots (origin-x origin-y  width height) view
     (unless (or (zerop width) (zerop height))
@@ -664,10 +591,10 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
               (extent-rect-ymax new-extent) (+ origin-y (float (/ height scale))))
         new-extent))))
 
- 
 
 
-		 
+
+
 ;Private Function: rect-union
 ;  Return the area of the union of RECT1 and RECT2.
 
@@ -702,7 +629,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
         (* x-length y-length)
         0)))
 
-  
+
 ;Private Function: rect-merge
 ;  Merge (union) RECT1 and RECT2 and modify RECT2 to contain the result.
 
@@ -712,7 +639,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
   (setf (extent-rect-xmax rect2)
         (max (extent-rect-xmax rect1)
              (extent-rect-xmax rect2))
-        
+
         (extent-rect-xmin rect2)
         (min (extent-rect-xmin rect1)
              (extent-rect-xmin rect2))

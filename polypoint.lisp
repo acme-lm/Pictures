@@ -22,34 +22,21 @@
 (in-package "PICTURES")
 
 
-(export '(
-	  vertices
-	  make-polypoint
-	  min-x-vertex
-	  min-y-vertex
-	  max-x-vertex
-	  max-y-vertex
-	  make-polyline
-	  )
-	'pictures)
-
-
 (defclass polypoint (extent-cache graphic)
-  (
-   (vertices     :type    array
+  ((vertices     :type    array
 		 :initform (make-array '(8) :adjustable t :fill-pointer 0)
-		 :accessor vertices 
+		 :accessor vertices
 		   :documentation  "a vector of x,y points ")
-   
+
    )
   (:documentation "The graphic class for drawing points in object coordinates"))
-  
+
 ;Function: make-polypoint
 ;  Return a new polypoint object.
-(defun make-polypoint (point-seq  &rest options) 
+(defun make-polypoint (point-seq  &rest options)
   "Make a polypoint with the coordinates contained in POINT-SEQ.
 The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
-  (DECLARE (VALUES polypoint))
+
   (APPLY #'MAKE-INSTANCE 'polypoint
 	 :point-seq point-seq
 	 options))
@@ -81,24 +68,24 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 
 
 (DEFMETHOD vertex-x ((polypoint polypoint) position)
-  (DECLARE (VALUES local-x))
+
   (with-slots (vertices) polypoint
     (WHEN (< position  (length-vertices polypoint))
 	(ELT vertices (* position 2)))))
 
 (DEFMETHOD (SETF vertex-x) (x (polypoint polypoint) position)
-  (DECLARE (VALUES local-x))
+
   (with-slots (vertices) polypoint
     (SETF (vertex-x vertices position) x)))
 
 (DEFMETHOD vertex-y ((polypoint polypoint) position)
-  (DECLARE (VALUES local-y))
+
     (IF (< position  (length-vertices polypoint))
 	(with-slots (vertices) polypoint
 	  (ELT vertices (+ (* position 2) 1)))))
 
 (DEFMETHOD (SETF vertex-y) (y (polypoint polypoint) position)
-  (DECLARE (VALUES local-y))
+
   (with-slots (vertices) polypoint
     (SETF (vertex-y vertices position) y)))
 
@@ -110,7 +97,7 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 ;  before returning it.
 
 (defmethod extent-compute ((polypoint polypoint))
-  (declare (values (or null extent-rect)))
+
   (LET (extent-rectangle)
   (with-slots (vertices transform) polypoint
     (with-vector temp-vector
@@ -138,7 +125,7 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
   )
 
 
-; Delete a vertex from the point list  
+; Delete a vertex from the point list
 (DEFMETHOD delete-vertex ( (polypoint polypoint) i)
   (DECLARE (type integer i))
   (extent-changed polypoint)
@@ -188,8 +175,8 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 ;  are given, then only parts of the object that lie within the given rectangle
 ;  need to be drawn.
 
-(defmethod draw-graphic ((polypoint polypoint) (view view) 
-                           &optional min-x min-y width height) 
+(defmethod draw-graphic ((polypoint polypoint) (view view)
+                           &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
   (with-slots (vertices gstate extent) polypoint
     (WHEN   (visible-p polypoint)
@@ -197,7 +184,7 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 	(with-vector temp-vertices
 	  (copy-to-vector vertices temp-vertices)
 	  (transform-point-seq (graphic-world-transform polypoint) temp-vertices)
-	  (view-draw-polypoint view temp-vertices 
+	  (view-draw-polypoint view temp-vertices
 			       (graphic-gstate polypoint)))))))
 
 ;Polyline Elements
@@ -207,7 +194,7 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 ;
 ;The polyline class inherits from the polypoint class so that the following
 ;methods described for polypoints are also available for polylines.
-;        
+;
 
 ;Polyline  Definition:
 (defclass polyline (polypoint)
@@ -220,8 +207,8 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 (defun make-polyline (point-seq  &rest options )
   "Make a polygon with the coordinates contained in POINT-SEQ.
 The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
-  (DECLARE (VALUES polygon))
-  
+
+
   (APPLY #'MAKE-INSTANCE 'polyline
 	 :point-seq point-seq
 	 options))
@@ -232,7 +219,7 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 ;draw a polyline
 
 (defmethod draw-graphic ((polyline polyline) (view view)
-                           &optional min-x min-y width height) 
+                           &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
   (with-slots (vertices gstate extent) polyline
     (WHEN (visible-p polyline)
@@ -240,7 +227,7 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 	  (with-vector temp-vertices
 		     (copy-to-vector vertices temp-vertices)
 		     (transform-point-seq (graphic-world-transform polyline) temp-vertices)
-	  (view-draw-polyline view temp-vertices 
+	  (view-draw-polyline view temp-vertices
 				    (graphic-gstate polyline)))))))
 
 
@@ -251,7 +238,7 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 			      (graphic-gstate polyline)
 			      (gstate-line-width polyline) (+ (/ (* (gstate-line-width polyline) pixel)  2 ) pixel)) pixel)))
 	(with-slots (vertices) polyline
-	  (with-vector temp-vertices 
+	  (with-vector temp-vertices
 	    (copy-to-vector vertices temp-vertices)
 	    (transform-point-seq (graphic-world-transform polyline) temp-vertices)
 	    (point-near-line temp-vertices line-width x y))))))
@@ -263,27 +250,27 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 (defun cross-product (p1 p2 q1 q2)
   (- (* (- (point-x p2) (point-x p1))
 	(- (point-y q2) (point-y q1)))
-     
+
      (* (- (point-x q2) (point-x q1))
 	(- (point-y p2) (point-y p1)))))
-  
+
 (defun inside-p (polygon p)
   (declare (type sequence polygon)
 	   (type point p))
 
   (LET ((poly-seq (get-global-vector)))
     (DO*
-      ( 
+      (
        (last   (- (length polygon) 2))
        (i           0 (+ i 2))
        )
       ((> i last) (VALUES poly-seq))
       (VECTOR-PUSH-EXTEND  (make-point :x (ELT polygon i) :y (ELT  polygon (+ i 1))) poly-seq)
-		 
+
       )
   ;; True if p is on a polygon edge (edge cross-product is 0) or if p is on the
   ;; same side of every polygon edge (edge cross-products have the same sign.
-  
+
     (do*
       (current-vertex
        current-sign
@@ -291,11 +278,11 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
        (prev-vertex (elt poly-seq 0) current-vertex)
        (prev-sign   (SIGNUM (cross-product p (elt poly-seq last) p prev-vertex)) current-sign)
        (i           1 (1+ i)))
-      
+
       ((or
 	 ;; Point on previous edge?
 	 (zerop prev-sign)
-	 
+
 	 ;; All edge cross-products the same sign?
 	 (> i last))
        (PROGN
@@ -305,17 +292,5 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
       (unless (= current-sign  prev-sign)
 	(PROGN (return-global-vector poly-seq);release the global vector for reuse
 						 (return nil))))
-    
+
     ))
-
-
-
-
-
-
-
-
-
-
-
-

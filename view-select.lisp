@@ -37,7 +37,6 @@
 
 (defmethod view-add-selection ((view view) graphic )
   (declare (type (or graphic list) graphic))
-  (declare (values (or graphic list)))
   (WHEN  graphic					       ;When "graphic" is equal to nil, ignore it.
     (IF (ATOM graphic)					       ;view-drag-select will call view-add-selection with a list
 	(place-on-selection view graphic)
@@ -52,14 +51,14 @@
     (SETF (graphic-sensitivity selection ) :subselectable)
     (LET* ((selection-elements (scene-elements selection))
 	   (elements-length (FILL-POINTER selection-elements))
-	   (elements-dimension (ARRAY-DIMENSION selection-elements 0)) )        
+	   (elements-dimension (ARRAY-DIMENSION selection-elements 0)) )
 	   (OR
 	     (DOTIMES (pos elements-length )
 	       (WHEN (EQ (grabber-graphic (ELT selection-elements pos)) graphic)
 		(RETURN t)))						 ;   IF the graphic  is alread selected, return
 	     (PROGN
 		 ;there are no  grabber rects in the scene and have to create a new one
-	       (IF  (= elements-length elements-dimension)					
+	       (IF  (= elements-length elements-dimension)
 		    (scene-insert selection (make-grabber-rect view :highlight (view-highlight-color view)))
 		    (SETF (FILL-POINTER selection-elements) (1+ (FILL-POINTER selection-elements))))
 		 (LET ((grabber-scene (ELT selection-elements (1- (FILL-POINTER selection-elements)))))
@@ -75,7 +74,6 @@
 
 (defmethod view-remove-selection ((view view) graphic )
   (declare (type (or graphic list) graphic))
-  (declare (values (or graphic list)))
   (IF (ATOM graphic)
 	(remove-from-selection view graphic)
 	(DOTIMES (pos (LENGTH graphic))
@@ -86,7 +84,7 @@
 (DEFUN remove-from-selection (view graphic)
   "Unattach the graphic from a highlight object in the selection scene"
   (with-slots (selection) view
-    (DOTIMES (pos  (LENGTH (scene-elements selection)))	          
+    (DOTIMES (pos  (LENGTH (scene-elements selection)))
       (LET ((scene-graphic (ELT (scene-elements selection) pos)))
 	(WHEN (EQ (grabber-graphic scene-graphic) graphic)       ;Is the graphic attached to a highlight object in the scene
 	  (view-damage view (grabber-graphic scene-graphic))	 ;  yes, erase the highlight object with the xor function
@@ -100,7 +98,7 @@
     (LET* ((elements (scene-elements selection))
 	   (elements-length (FILL-POINTER elements)))
     (WHEN (> elements-length 0)
-      (DOTIMES (pos elements-length  )	
+      (DOTIMES (pos elements-length  )
 	(LET* ((highlight (ELT elements  pos))
 	      (graphic (grabber-graphic highlight)))
 	  (WHEN
@@ -121,7 +119,7 @@
 	    (LET (( graphic (graphic-pick (view-graphic view) x1 y1 (* 2 (view-pixel-size view))))
 		  (selection-elements (AND (view-selection view)
 					   (scene-elements (slot-value  view 'selection)))))
-	      
+
 	      (IF  graphic ;(AND graphic (NOT (EQL graphic (view-graphic view))))	;Has a graphic been picked?
 		   (IF  (AND (view-selection view)
 			     (DOTIMES (pos (LENGTH selection-elements))
@@ -129,7 +127,7 @@
 				 (RETURN t))))
 			(unless add
 			  (view-move-graphic graphic view ))
-			(PROGN 
+			(PROGN
 			  (UNLESS add		;  Yes, is the graphic to be added to the selection?
 			    (view-clear-selection view))	;      No, clear the selection.
 			  (view-add-selection view graphic)	;   Add the graphic to the view selection.
@@ -155,13 +153,13 @@
 	   (*fixed-x* fixed-x)            (*fixed-y* fixed-y)
 	   (*delta-fx* (- fixed-x x  ))   ( *delta-fy* (-  fixed-y y))
 	   (*delta-px* (- x *px* ))       (*delta-py* (- y *py*)) )
-      
+
       (DECLARE (SPECIAL *px* *py* *fixed-x* *fixed-y* *delta-fx* *delta-fy* *delta-px* *delta-py* *transform*))
       (WHEN (= *px* *fixed-x*) (SETF *px* (FLOOR (+ *px* pixel-size))
 				     *delta-px* (FLOOR (+ *delta-px* pixel-size))))
       (WHEN (= *py* *fixed-y*) (SETF *py* (FLOOR (+ *py* pixel-size))
 				     *delta-py* (FLOOR (+ *delta-py* pixel-size))))
- 
+
       (with-event-mode (view `((:motion-notify ,event) (move-box))
 			     `((:button-release ,event) (view-button-release t)))
 	(LET ((display-after-func (display-after-function display))
@@ -184,7 +182,7 @@
 	  (SETF (display-after-function display) display-after-func))
 	(erase-grabber-rects view  selection-elements (FILL-POINTER  selection-elements))
 	(repair-view view)
-	
+
 	(move-selected-graphics view selection-elements (FILL-POINTER  selection-elements)
 				(- (view-untransform-x view *fixed-x*) (view-untransform-x view fixed-x ))
 				(-  (view-untransform-y view *fixed-y*) (view-untransform-y view fixed-y)))))))
@@ -205,7 +203,7 @@
 	   (*px* x  )              ( *py*  y)
 	   ( fixed-x x)            ( fixed-y y)
 	   )
-      
+
       (DECLARE (SPECIAL *px* *py*  ))
       (with-event-mode (view `((:motion-notify :button-3)  (scale-rubberband ,fixed-x ,fixed-y))
 			     '((:button-release :button-3) (view-button-release t)))
@@ -229,7 +227,7 @@
 	   (*px* x  )              ( *py*  y)
 	   ( fixed-x x)            ( fixed-y y)
 	   )
-      
+
       (DECLARE (SPECIAL *px* *py*  ))
       (with-event-mode (view '((:motion-notify :button-3) (LIST 'scale-rubberband fixed-x fixed-y))
 			     '((:button-release :button-1) (view-button-release t)))
@@ -316,7 +314,7 @@
 (DEFMACRO change-to-identity (transform)
   `(with-slots (t11 t12 t21 t22 t31 t32) ,transform
      (SETF t11 1 t12 0 t21 0 t22 1 t31 0 t32 0)))
-  
+
 
 (DEFMETHOD rotate-box ((view view) )
   (DECLARE (SPECIAL *px* *py* *fixed-x* *fixed-y* *transform* *rotate-vector*))
@@ -327,7 +325,7 @@
 	(LET* ((sx (ELT draw-vertices 4))
 	       (sy (ELT draw-vertices 5))
 	       (angle
-		     
+
 		     (- (IF (= x *fixed-x*)
 			       (radians 0)
 			       (+ (ATAN (/ (-   y *fixed-y*) (-  x *fixed-x* )))
@@ -335,7 +333,7 @@
 			   (IF (= *fixed-x* sx)
 			       0
 			       (ATAN (/ (-  sy *fixed-y* ) (-  sx *fixed-x* )))))	; (radians 180))
-		     
+
 		     ))
 	  (using-gcontext
 	    (gc :drawable view
@@ -354,5 +352,3 @@
 	    (SETF *px* (ELT draw-vertices 4))
 	    (SETF *py* (ELT draw-vertices 5))
 	    ))))))
-
-

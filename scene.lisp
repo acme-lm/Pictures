@@ -22,23 +22,7 @@
 (in-package "PICTURES")
 
 
-(export '(
-	  scene
-	  make-scene
-	  valid-extent-p
-	  scene-delete
-	  scene-elements
-	  scene-insert
-	  scene-reparent
-	  scene-ungroup
-	  scene-graphic
-	  scene-restack
-	  )
-	'pictures)
-
-;Scene Class Definition:
-
-
+;;; Scene Class Definition:
 
 
 ;Type: scene-position
@@ -82,7 +66,7 @@
                            min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
   (with-slots (elements extent) scene
-    (WHEN (visible-p scene) 
+    (WHEN (visible-p scene)
 	(graphic-world-transform scene)	; Cache our transform
 	(DOTIMES (position (length elements))
 	  (draw-graphic-clipped (ELT elements position) view min-x min-y width height)
@@ -92,7 +76,7 @@
                            &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
   (with-slots (elements extent) scene
-    (WHEN (visible-p scene) 
+    (WHEN (visible-p scene)
 	(graphic-world-transform scene)	; Cache our transform
 	(DOTIMES (position (length elements))
 	  (draw-graphic (ELT elements position) view min-x min-y width height)
@@ -130,7 +114,7 @@
 
 (DEFMETHOD extent-compute ((scene scene))
 ;(DEFUN scene-extent-compute (scene)
-  (declare (values (or null extent-rect)))
+
   (with-slots (elements) scene
     (IF (/= (FILL-POINTER elements) 0)					; Is this an empty scene?
       (let ((first-child-extent ; No, get the first child's extent
@@ -152,9 +136,9 @@
             temp-extent)
 	  )
 	)
-      (make-extent-rect :xmin 0 :ymin 0 :xmax 0 :ymax 0))))			
+      (make-extent-rect :xmin 0 :ymin 0 :xmax 0 :ymax 0))))
 
-  
+
 ;Method: scene-delete
 ;  If POS is 0 or nil, the first or last object in the SCENE is
 ;  deleted.  If POS is a graphic, then that graphic is deleted.
@@ -162,19 +146,19 @@
 
 (defmethod scene-delete ((scene scene) pos)
   (declare (type scene-position pos))
-  (declare (values graphic))
+
   (extent-changed scene)
   (with-slots (elements) scene                                  ;from a scene
     (when elements
       (let ((dead-graphic					; Remember who was killed
-              (case pos	
+              (case pos
                 (nil
 		 (UNLESS (EQL (FILL-POINTER elements) 0)
 		  (LET ((graphic (AREF elements (- (length elements) 1))))
 		    (SETF (FILL-POINTER elements)	; Delete last graphic
 			  (- (FILL-POINTER elements ) 1))
 		    graphic)))
-		  
+
                 (t
 		 (LET* ((realpos  (OR (POSITION pos elements) pos))
 			(graphic (WHEN (NUMBERP realpos) (AREF elements realpos)))
@@ -182,7 +166,7 @@
 		   (WHEN (NUMBERP realpos)
 		     (DO ((position (+ 1 realpos)(+ 1 position)))      ; Delete the given graphic or position
 			 ((eq position (length elements)) nil)
-		       (SETF (aref elements (- position 1))(aref elements position))) 
+		       (SETF (aref elements (- position 1))(aref elements position)))
 		     (SETF (FILL-POINTER elements)(- (FILL-POINTER elements) 1))
 		     graphic
 		     )))
@@ -200,7 +184,7 @@
 ;  Return the list of elements contained by SCENE.
 
 (defmethod scene-elements ((scene scene))
-  (declare (values elements))
+
 
   (slot-value scene 'elements))
 
@@ -222,17 +206,17 @@
 
 (defmethod scene-insert ((scene scene) (graphic graphic) &optional pos )
   (declare (type scene-position pos))
-  (declare (values graphic))
+
   (extent-changed scene)
   (WHEN (graphic-parent graphic)
     (scene-delete (graphic-parent graphic) graphic))	;if there is a parent remove from the elements list of that parent
   (SETF (graphic-gstate graphic) (combine-into (graphic-combined-gstate scene) (graphic-gstate graphic)))
   (with-slots (elements parent) scene		;to a scene
-    (case pos		
+    (case pos
       (nil
        (VECTOR-PUSH-EXTEND graphic elements 5)	;insert after last graphic
        )
-      
+
       (t
        (LET* ((realpos  (OR (POSITION pos elements) pos ))
 	      )
@@ -241,7 +225,7 @@
 						; insert at position of the given graphic or position
 	   (DO ((position (1- (length elements)) (1- position)))
 	       ((eq position realpos) nil)
-	     (SETF (aref elements position)(aref elements (- position 1)))) 
+	     (SETF (aref elements position)(aref elements (- position 1))))
 	   (SETF (aref elements realpos) graphic)
 	   )))
       )
@@ -252,7 +236,7 @@
 
 (defmethod scene-insert ((scene scene) (graphic scene) &optional pos )
   (declare (type scene-position pos))
-  (declare (values graphic))
+
   (extent-changed scene)
   (UNLESS (EQL   scene graphic)
     (WHEN (graphic-parent graphic)
@@ -261,13 +245,13 @@
     (with-vector temp-elements
       (copy-to-vector (scene-elements graphic) temp-elements)
       (setf (scene-elements graphic) temp-elements))
-    
+
     (with-slots (elements parent) scene		;to a scene
-      (case pos		
+      (case pos
 	(nil
 	 (VECTOR-PUSH-EXTEND graphic elements 5)	;insert after last graphic
 	 )
-	
+
 	(t
 	 (LET* ((realpos  (OR (POSITION pos elements) pos ))
 		)
@@ -276,11 +260,11 @@
 						; insert at position of the given graphic or position
 	     (DO ((position (1- (length elements)) (1- position)))
 		 ((eq position realpos) nil)
-	       (SETF (aref elements position)(aref elements (- position 1)))) 
+	       (SETF (aref elements position)(aref elements (- position 1))))
 	     (SETF (aref elements realpos) graphic)
 	     ))))
       )
-    
+
     (setf (slot-value graphic 'parent) scene))			; Set its new parent
   graphic)
 
@@ -332,7 +316,3 @@
 
   (LET ((graphic (scene-delete scene old-position)))
     (scene-insert scene graphic new-position)))
-
-
-
-

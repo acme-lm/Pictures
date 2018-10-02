@@ -22,16 +22,6 @@
 (in-package "PICTURES")
 
 
-(export '(
-	  family-name
-	  make-font-family
-	  find-font-family
-	  find-font
-	  find-family-members
-	  default-family-name 
-	  )
-	'pictures)
-
 ;font families utilites
 (DEFPARAMETER default-family-name "-adobe-helvetica-medium-r-normal-*")
 
@@ -44,10 +34,10 @@
   `(AND  (STRINGP ,font-name)
 	(> (COUNT #\- ,font-name) minimum-font-attributes-in-a-name))
       )
- 
+
 (defclass font-family ()
   (
-   (family-name       :type    string 
+   (family-name       :type    string
 		      :accessor family-name
 		      :initarg :family-name
 		      :documentation  "The name for a family of fonts ")
@@ -69,7 +59,7 @@
 
 (DEFUN add-size (name size)
   (IF (x11-font-string-p name)
-      (CONCATENATE 'string "-" (font-name-attribute name :company :blank) 
+      (CONCATENATE 'string "-" (font-name-attribute name :company :blank)
 		   (FORMAT nil "-~A" size) "-"  (OR (font-name-attribute :resolution :rest) "*"))
       (CONCATENATE 'string name size)))
 
@@ -77,7 +67,7 @@
 (defmacro font-objects (members display)
   "determine if members is nil, a string or a list of (font-name size) and return nil or a list of (font-name size)"
   `(COND
-     
+
      ((AND ,members (LISTP (FIRST ,members)))
       (MAPCAR #'(lambda (font-list) (LIST (open-font ,display (CONCATENATE 'string (FIRST font-list) "*"))
 					  (SECOND font-list))) ,members))
@@ -86,7 +76,7 @@
 				 (open-font display (add-size (FIRST ,members) size)) size))
 	      (SORT (x11-font-sizes (first ,members) ,display) '<)))
      ((STRINGP (FIRST ,members))
-      
+
       (get-size-font-pairs (mapcar #'(lambda (string) (open-font display string)) (list-ft-names ,members ,display)))))
      )
 
@@ -112,16 +102,16 @@
 			 (SORT (MAPCAR #'(lambda (pairs) (FIRST pairs)) font-size-pairs) #'<))))
     (MAPCAR #'(lambda (size) (NREVERSE (ASSOC size font-size-pairs))) sorted-sizes)))
 
-	
+
 (DEFUN make-font-family (family-name display &rest members)
-  (DECLARE (VALUES (type font-family)))
+
   (DECLARE (LIST members))
   (funcall #'make-instance 'font-family
 	   :display display
 	   :family-name family-name
 	   :family-members
 	   (OR
-	     
+
 	     (font-objects members display)
 	     (IF (x11-font-string-p family-name)
 		 (mapcar #'(lambda (x) (LIST
@@ -142,7 +132,7 @@
 
 (DEFUN find-font-family (family-name display)
   "Returns the font-family of the FAMILY-NAME for the DISPLAY"
-  (DECLARE (VALUES (type font-family or nil)))
+
   (SECOND (ASSOC family-name (GETF (display-plist display) 'font-families) :test #'STRING-EQUAL ))
   )
 
@@ -166,7 +156,7 @@
     (WHEN family-members
     (IF  (< size (the-font-size (FIRST family-members)))
 	 (the-font (FIRST family-members))
-	 
+
 	 (DO* ((font-pair (FIRST family-members) next-pair)
 	       (font-size (the-font-size font-pair) next-font-size)
 	       (next-font-pairs (REST family-members) (REST next-font-pairs))
@@ -191,7 +181,7 @@
 	  (next-font-size (SECOND next-pair) (SECOND next-pair))
 	  )
 	 ((NOT next-pair )
-	  (IF  (= font-size size)  (SETF (FIRST font-pair) font) 
+	  (IF  (= font-size size)  (SETF (FIRST font-pair) font)
 	       (SETF family-members (APPEND family-members (LIST (LIST font size)))))
 	  (RETURN font))
       (WHEN (= font-size size)  (SETF (FIRST font-pair) font) (RETURN font))
@@ -209,7 +199,7 @@
   (slot-value family 'family-members)
   )
 
- 
+
 (DEFMETHOD (SETF font-family-members) ( members (family font-family) display)
   (IF members
       (SETF (slot-value family 'family-members) (font-objects members display))
@@ -237,7 +227,7 @@ ATTRIBUTE is (member :size :company :weight :blank :name :resolution :end)"
     (flet ((elt-safe
 	     (sequence index)
 	     (when (< index (length sequence))
-	       (elt sequence index))))		     
+	       (elt sequence index))))
     (LET* ((dash-positions (dash-positions name))
 	   (attribute-position
 	    (CASE attribute
@@ -262,7 +252,3 @@ ATTRIBUTE is (member :size :company :weight :blank :name :resolution :end)"
       (SUBSEQ name (1+ (OR attribute-position 0))
 	       name-range-position )
       ))))
-
-
-
-

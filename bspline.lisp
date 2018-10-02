@@ -19,14 +19,7 @@
 ;;; Authors: Delmar Hager, James Dutton, Teri Crowe
 ;;; Contributors: Kerry Kimbrough, Patrick Hogan, Eric Mielke
 
-(in-package "PICTURES")
-
-(export '(
-	  make-bspline make-closed-bspline make-filled-bspline make-filled-bspline-edge 
-	  )
-	'pictures)
-
-
+(in-package :pictures)
 
 
 (defclass bspline (polypoint)
@@ -38,7 +31,7 @@
 (defun make-bspline (point-seq  &rest options )
   "Make a bspline with the coordinates contained in POINT-SEQ.
   The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
-  (DECLARE (VALUES polygon))
+
 
   (APPLY #'MAKE-INSTANCE 'bspline
 	 :point-seq point-seq
@@ -53,13 +46,13 @@
 (defun make-closed-bspline (point-seq  &rest options )
   "Make a bspline with the coordinates contained in POINT-SEQ.
   The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
-  (DECLARE (VALUES polygon))
+
 
   (APPLY #'MAKE-INSTANCE 'closed-bspline
 	 :point-seq point-seq
 	 options))
 
-  
+
 (defclass filled-bspline (bspline)
   ()
   (:documentation "the graphic class for drawing a filled bspline on the screen"))
@@ -67,7 +60,7 @@
 (defun make-filled-bspline (point-seq  &rest options )
   "Make a bspline with the coordinates contained in POINT-SEQ.
   The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
-  (DECLARE (VALUES polygon))
+
 
   (APPLY #'MAKE-INSTANCE 'filled-bspline
 	 :point-seq point-seq
@@ -81,7 +74,7 @@
 (defun make-filled-bspline-edge (point-seq  &rest options )
   "Make a bspline-edge with the coordinates contained in POINT-SEQ.
    The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
-  (DECLARE (VALUES polygon))
+
 
   (APPLY #'MAKE-INSTANCE 'filled-bspline-edge
 	 :point-seq point-seq
@@ -89,8 +82,8 @@
 
 (PROCLAIM '(inline bspline-fwd-diff))
 (DEFUN bspline-fwd-diff (c position dt dt2 dt3)
-  "Return the forward differences for a B-spline cubic polynomial. (SUBSEQ C 0 4) 
-is the B-spline geometry vector. DT is the increment to the curve parameter for each 
+  "Return the forward differences for a B-spline cubic polynomial. (SUBSEQ C 0 4)
+is the B-spline geometry vector. DT is the increment to the curve parameter for each
 iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, respectively."
   (LET* ((c0 (ELT c position))
 	 (c1 (ELT c (+ position 2)))
@@ -132,9 +125,9 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
   `(PROGN
     (DO ((i 0 (1+ i)))
 	 ((EQ i ncurves))
-       
-       ;; Draw i'th curve      
-       
+
+       ;; Draw i'th curve
+
        (MULTIPLE-VALUE-BIND (x dx dx2 dx3) (bspline-fwd-diff spline (* i 2) dt dt2 dt3)
 	 (MULTIPLE-VALUE-BIND (y dy dy2 dy3) (bspline-fwd-diff spline (1+ (* i 2))  dt dt2 dt3)
 	   (DO ((n 0)) (())
@@ -148,9 +141,9 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
 		     (SETF (vertex-y ,vector length) ny))))
 	       (SETF prev-x x
 		     prev-y y)
-	       
+
 	       (WHEN (EQ number-deltas (INCF n)) (RETURN))
-	       
+
 	       (INCF x dx)
 	       (INCF y dy)
 	       (INCF dx dx2)
@@ -158,13 +151,13 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
 	       (INCF dy dy2)
 	       (INCF dy2 dy3))))))
      ;; Draw final curve segment
-    (MULTIPLE-VALUE-BIND (nx ny) (transform-point (graphic-world-transform bspline) last-x last-y)  
+    (MULTIPLE-VALUE-BIND (nx ny) (transform-point (graphic-world-transform bspline) last-x last-y)
       (LET ((length (length-point-seq ,vector)))
 		     (SETF (vertex-x ,vector length) nx)
 		     (SETF (vertex-y ,vector length) ny))
       )))
 
-(defmethod draw-graphic ((bspline bspline) (view view)  &optional min-x min-y width height) 
+(defmethod draw-graphic ((bspline bspline) (view view)  &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
   (with-slots (vertices gstate extent) bspline
     (WHEN (visible-p bspline)
@@ -187,7 +180,7 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
 		(view-draw-polyline view spline-points (graphic-gstate bspline))
 	      ))))))))
 
-(defmethod draw-graphic ((bspline closed-bspline) (view view)  &optional min-x min-y width height) 
+(defmethod draw-graphic ((bspline closed-bspline) (view view)  &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
   (with-slots (vertices gstate extent) bspline
     (WHEN (visible-p bspline)
@@ -209,11 +202,11 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
 		(calculate-spline spline-points)
 		(view-draw-polygon view spline-points (graphic-gstate bspline))
 	      )
-	      
+
 	      )))))))
 
 
-(defmethod draw-graphic ((bspline filled-bspline) (view view)  &optional min-x min-y width height) 
+(defmethod draw-graphic ((bspline filled-bspline) (view view)  &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
   (with-slots (vertices gstate extent) bspline
     (WHEN (visible-p bspline)
@@ -235,10 +228,10 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
 		(calculate-spline spline-points)
 		(view-draw-filled-polygon view spline-points (graphic-gstate bspline))
 	      )
-	      
+
 	      )))))))
 
-(defmethod draw-graphic ((bspline filled-bspline-edge) (view view)  &optional min-x min-y width height) 
+(defmethod draw-graphic ((bspline filled-bspline-edge) (view view)  &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
   (with-slots (vertices gstate edge-gstate extent) bspline
     (WHEN (visible-p bspline)
@@ -316,33 +309,33 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
 		  (with-vector temp-vector
 		    (VECTOR-PUSH-EXTEND first-x temp-vector)
 		    (VECTOR-PUSH-EXTEND first-y temp-vector)
-		    (SETF (vertex-i spline-points *large-number*) temp-vector)) 
+		    (SETF (vertex-i spline-points *large-number*) temp-vector))
 		  (point-near-line spline-points line-width x y)
 		  ))))))))
 
 (defmacro inside-spline-p (points x y)
   `(let*
 	  ( ;;(points (polygon-points polygon))
-	   
+
 	   (p1x    (elt ,points 0))
 	   (p1y    (elt ,points 1))
-	   
+
 	   (p2x    (elt ,points 2))
 	   (p2y    (elt ,points 3))
-	   
+
 	   p3x p3y in-p)
-	  
+
 	  (do ((i 4 (+ i 2)))
-	      
+
 	      ((>= i (length ,points))
 	       in-p)
-	    
+
 	    (setf p3x (elt ,points i)
 		  p3y (elt ,points (1+ i)))
-	    
+
 	    ;; Point inside next triangle?
 	    (when
-	      
+
 	      ;; Use cross product to test if point is on same side of all triangle
 	      ;; edges or if point lies on an edge.
 	      (let ((sign1 (signum (- (* (- p1x ,x) (- p2y ,y)) (* (- p2x ,x) (- p1y ,y))))))
@@ -353,10 +346,10 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
 			    (let ((sign3 (signum (- (* (- p3x ,x) (- p1y ,y)) (* (- p1x ,x) (- p3y ,y))))))
 			      (or (zerop sign3)
 				  (= sign1 sign3))))))))
-	      
+
 	      ;; Yes, complement inside-ness
 	      (setf in-p (not in-p)))
-	    
+
 	    ;; Prepare next triangle.
 	    (setf p2x p3x p2y p3y))))
 
@@ -380,7 +373,7 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
 	       (ncurves (+ 1 (length-point-seq vertices))))
 	      (with-vector spline-points
 		(calculate-spline spline-points)
-	      
+
 		  (inside-spline-p spline-points x y )
 		))))))))
 
@@ -409,10 +402,10 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
 	       (ncurves (+ 1 (length-point-seq vertices))))
 	      (with-vector spline-points
 		(calculate-spline spline-points)
-		(OR 
+		(OR
 			(inside-spline-p spline-points x y)
 			(point-near-line spline-points line-width x y))
-			
+
 		))))))))
 
 (DEFMETHOD graphic-damage ((graphic bspline))
@@ -427,19 +420,3 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
 		       (< (ABS (- (extent-rect-xmax extent) (extent-rect-xmin extent))) (view-pixel-size view)))
 	    (SETF (extent-rect-xmax extent) (+ (extent-rect-xmin extent) (view-pixel-size view))))
 	  (view-damage view graphic))))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

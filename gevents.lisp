@@ -22,77 +22,66 @@
 (in-package "PICTURES")
 
 
-(export '(
-	  add-event delete-event 
-	  )
-	'pictures)
-#-clx-mit-r4
-(defmethod add-event ((graphic graphic) event-spec &rest actions)
-  "Add EVENT-SPEC and ACTIONS to the plist for GRAPHIC."
-  (let ((event-binding  (graphic-parse-event-spec (list* event-spec (copy-list actions))))
-	)
-    (with-slots ( plist) (the graphic graphic)
-      (LET* ((event-translations (GETF plist :event-translations))
-	    (previous (assoc (car event-binding) event-translations :test #'equal))
-	    )
-	(if previous
-	    ;; Yes, modify it with the new actions.
-	    (setf (rest previous) (rest event-translations))
-	    
-	    ;; No, add new translation.
-	    (progn
-	      (push event-binding event-translations)
-	      (SETF (GETF plist :event-translations) event-translations))
-	    )
-	)
-      (DOLIST (view (graphic-views graphic) )
-	
-	(when (realized-p view)
-	  (LET* ((view-event-mask (slot-value view 'event-mask)) ;update the view mask
-		 (view-new-mask (cluei::update-event-mask event-binding view-event-mask)))
-	    (unless (= view-new-mask view-event-mask) ;; When modified
-	      (setf (window-event-mask view) view-new-mask)
-	      ))))))
-  (values))
 
-#+clx-mit-r4
+;;; do we need this?
+;; (defmethod add-event ((graphic graphic) event-spec &rest actions)
+;;   "Add EVENT-SPEC and ACTIONS to the plist for GRAPHIC."
+;;   (let ((event-binding  (graphic-parse-event-spec (list* event-spec (copy-list actions))))
+;; 	)
+;;     (with-slots ( plist) (the graphic graphic)
+;;       (LET* ((event-translations (GETF plist :event-translations))
+;; 	    (previous (assoc (car event-binding) event-translations :test #'equal))
+;; 	    )
+;; 	(if previous
+;; 	    ;; Yes, modify it with the new actions.
+;; 	    (setf (rest previous) (rest event-translations))
+
+;; 	    ;; No, add new translation.
+;; 	    (progn
+;; 	      (push event-binding event-translations)
+;; 	      (SETF (GETF plist :event-translations) event-translations))
+;; 	    )
+;; 	)
+;;       (DOLIST (view (graphic-views graphic) )
+
+;; 	(when (realized-p view)
+;; 	  (LET* ((view-event-mask (slot-value view 'event-mask)) ;update the view mask
+;; 		 (view-new-mask (cluei::update-event-mask event-binding view-event-mask)))
+;; 	    (unless (= view-new-mask view-event-mask) ;; When modified
+;; 	      (setf (window-event-mask view) view-new-mask)
+;; 	      ))))))
+;;   (values))
+
+
 (defmethod add-event ((graphic graphic) event-spec &rest actions)
   "Add EVENT-SPEC and ACTIONS to the plist for GRAPHIC."
-  (let ((event-binding  (graphic-parse-event-spec (list* event-spec (copy-list actions))))
-	)
+  (let ((event-binding  (graphic-parse-event-spec (list* event-spec (copy-list actions)))))
     (with-slots ( plist) (the graphic graphic)
       (LET* ((event-translations (GETF plist :event-translations))
-	    (previous (assoc (car event-binding) event-translations :test #'equal))
-	    )
+	     (previous (assoc (car event-binding) event-translations :test #'equal)))
 	(if previous
 	    ;; Yes, modify it with the new actions.
 	    (setf (rest previous) (rest event-translations))
-	    
 	    ;; No, add new translation.
 	    (progn
 	      (push event-binding event-translations)
-	      (SETF (GETF plist :event-translations) event-translations))
-	    )
-	
-      (DOLIST (view (graphic-views graphic) )
-	
-	(when (realized-p view)
+	      (SETF (GETF plist :event-translations) event-translations)))
+	(DOLIST (view (graphic-views graphic) )
 	  (when (realized-p view)
-	    (LET* ((view-event-mask (slot-value view 'event-mask))
-		  (view-new-mask (cluei::event-translation-mask view-event-mask event-translations) ))
-	      (unless (= view-new-mask view-event-mask) 
-		(setf (window-event-mask view) view-new-mask))))
-	  
-	  )))))
+	    (when (realized-p view)
+	      (LET* ((view-event-mask (slot-value view 'event-mask))
+		     (view-new-mask (cluei::event-translation-mask view-event-mask event-translations) ))
+		(unless (= view-new-mask view-event-mask)
+		  (setf (window-event-mask view) view-new-mask)))))))))
   (values))
 
 (defmethod delete-event ((graphic graphic) event-spec)
   "Remove EVENT-SPEC from the event-translations for GRAPHIC."
   (let ((event-binding (graphic-parse-event-spec (list event-spec))))
-    (with-slots (plist) (the graphic graphic) 
-      ;; Compute event mask without current event translations	
-      (LET* ((event-translations (GETF plist :event-translations)))	
-	(SETF (GETF plist :event-translations) (delete (car event-binding) event-translations 
+    (with-slots (plist) (the graphic graphic)
+      ;; Compute event mask without current event translations
+      (LET* ((event-translations (GETF plist :event-translations)))
+	(SETF (GETF plist :event-translations) (delete (car event-binding) event-translations
 		      :key #'car :count 1
 		      :test #'equal)))
 	;; Update the graphic event mask
@@ -126,15 +115,15 @@
 	  ;; Instance translations
 	  (find-translation event key (GETF (slot-value (the graphic graphic) 'plist) :event-translations))
 
-	  ;; Class translations 
+	  ;; Class translations
 	    (find-translation event key (GET (class-name-of graphic) 'event-translations))))
 	      )))
 
 
 (defun graphic-parse-event-spec (event-translation)
   "Return a canonical form of the EVENT-TRANSLATION."
-  (declare (values canonical-event-translation))
-  
+
+
   (cons
     (let ((event-spec (first event-translation)))
       (typecase event-spec
@@ -144,15 +133,15 @@
 	   (assert checker nil "No check function defined for ~s." key)
 	   (multiple-value-bind (args real-key) (apply checker event-spec)
 	     (cons (or real-key key) args))))
-	
+
 	(character
 	 (cons :key-press (key-check :key-press event-spec)))
-	
+
 	(otherwise
 	 (unless (assoc event-spec cluei::*event-mask-alist* :test #'eq)
 	   (error "~s is not a known event keyword." event-spec))
 	 event-spec)))
-    
+
     (cdr event-translation)))
 
 
@@ -162,20 +151,20 @@
   (declare (ignore event-key))
   (unless (typep char '(or card16 character (member :any)))
     (error "~a is not a CHARACTER, CARD16 or :ANY." char))
-  
+
   (let*
     ((modifiers
        (cond ((or (null state) (eq state :none))   0)
 	     ((numberp state)                      state)
-	     ((eq state :any)                      (setf select 0))		 		 
+	     ((eq state :any)                      (setf select 0))
 	     (t                                    (encode-clue-modifier-mask state))))
-     (mask 
+     (mask
        (cond ((null select)                        (if (characterp char) 0 modifiers))
 	     ((numberp select)                     select)
 	     ((eq select :same)                    modifiers)
-	     ((eq select :all)                     #xffff)	     	     
+	     ((eq select :all)                     #xffff)
 	     (t                                    (encode-clue-modifier-mask select)))))
-    
+
     (list 'key-match char modifiers mask)))
 
 
@@ -203,8 +192,3 @@
 
 (DEFMETHOD (SETF clue::class-event-translations) (translations (class t))
   (setf (GET (class-name class)  'event-translations) translations))
-
-
-
-
-

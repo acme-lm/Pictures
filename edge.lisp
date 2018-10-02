@@ -19,13 +19,9 @@
 ;;; Authors: Delmar Hager, James Dutton, Teri Crowe
 ;;; Contributors: Kerry Kimbrough, Patrick Hogan, Eric Mielke
 
-(in-package "PICTURES")
+(in-package :pictures)
 
 
-(export '(
-	  edge-gstate
-	  )
-	'pictures)
 
 (defclass edge ()
   ((edge-gstate	:type		(or null gstate)
@@ -35,5 +31,3 @@
 		:documentation	"The visual attributes of the line bounding a filled graphic object(R)"))
   (:documentation "Provides the gstate of the edge for filled objects")
   )
-
-

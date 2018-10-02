@@ -22,17 +22,6 @@
 (in-package "PICTURES")
 
 
-(EXPORT '(
-	  graphic-image-content
-	  make-graphic-image
-	  graphic-image-base-x
-	  graphic-image-base-y
-	  graphic-image-gravity
-	  graphic-image-tile-p
-	  )
-	'pictures)
-
-
 (DEFMACRO compute-base-origin-if-not-set (base-x base-y)
   `(UNLESS (AND ,base-x ,base-y)
      (MULTIPLE-VALUE-BIND (x y) (compute-base-origin graphic-image view)
@@ -47,7 +36,7 @@
 		      :initform nil
 		      :accessor graphic-image-content
 		      :documentation "the numeric values for the graphic-image")
-   
+
    (graphic-image-base-x  :type	(OR wcoord null)
 			  :initarg	:base-x
 			  :initform nil
@@ -95,7 +84,7 @@
 			   :initarg :tile-p
 			   :initform nil
 			   :documentation "a flag to signal if the graphic image is to tile when drawn")
- 
+
    (graphic-image-scale    :type number
 			   :accessor graphic-image-scale
 			   :initform 1
@@ -107,7 +96,7 @@
 (DEFUN make-graphic-image (image &key  tile-p base-x base-y extent-x extent-y extent-width extent-height
 				      (gravity :southwest) gstate transform parent (sensitivity :editable) plist)
 
-  
+
   (FUNCALL #'MAKE-INSTANCE 'graphic-image
 	   :allow-other-keys t
 	   :base-x base-x
@@ -133,22 +122,22 @@
     (UNLESS (OR (AND graphic-image-base-x graphic-image-base-y) (AND extent-x extent-y))
       (SETF graphic-image-base-x 0)
       (SETF graphic-image-base-y 0))
-    
+
     ))
 
 
 (DEFMETHOD (SETF graphic-image-base-x) :before  (x (graphic-image graphic-image) )
   (with-slots (extent graphic-image-extent-x graphic-image-base-x) graphic-image
-    (WHEN graphic-image-extent-x 
-      
+    (WHEN graphic-image-extent-x
+
       (SETF graphic-image-extent-x (+ graphic-image-extent-x (- x graphic-image-base-x))))
     )
   (extent-changed graphic-image))
 
 (DEFMETHOD (SETF graphic-image-base-y) :before ( y (graphic-image graphic-image))
   (with-slots (extent graphic-image-extent-y graphic-image-base-y) graphic-image
-    (WHEN graphic-image-extent-y 
-      
+    (WHEN graphic-image-extent-y
+
       (SETF graphic-image-extent-y (+ graphic-image-extent-y (- y graphic-image-base-y))))
     )
   (extent-changed graphic-image))
@@ -178,14 +167,14 @@
 
 
 (DEFMETHOD extent-compute ((graphic-image graphic-image))
-  (DECLARE (VALUES (OR null extent-rect)))
-  
+
+
   (LET (
 	(scale-x (view-scale-x (graphic-view graphic-image)))
 	(scale-y (view-scale-y (graphic-view graphic-image))))
   (with-slots (extent graphic-image-base-x graphic-image-base-y graphic-image-extent-x graphic-image-extent-y
 		      graphic-image-extent-width graphic-image-extent-height image-content transform) graphic-image
-    
+
     (IF (AND graphic-image-extent-x graphic-image-extent-y graphic-image-extent-width graphic-image-extent-height)
 	(MULTIPLE-VALUE-BIND (x-min y-min) (transform-point transform graphic-image-extent-x graphic-image-extent-y)
 	  (MULTIPLE-VALUE-BIND (x-max y-max) (transform-point transform
@@ -197,7 +186,7 @@
 	      :xmax x-max
 	      :ymax y-max)))
 	(MULTIPLE-VALUE-BIND (x-min y-min) (transform-point transform graphic-image-base-x graphic-image-base-y)
-	  
+
 	    (make-extent-rect
 	      :xmin x-min
 	      :ymin y-min
@@ -214,7 +203,7 @@
   `(transform-y view ,y))
 
 (DEFMETHOD draw-graphic ((graphic-image graphic-image) (view view)
-                           &optional min-x min-y width height) 
+                           &optional min-x min-y width height)
   (DECLARE (type (OR null wcoord) min-x min-y width height))
   (with-slots (gstate extent  graphic-image-scale gstate transform graphic-image-base-x graphic-image-base-y
 			    image-content (tile-p graphic-image-tile-p) extent) graphic-image
@@ -224,7 +213,7 @@
 		(scale-x (view-scale-x view))
 		(scale-y (view-scale-y view)))
 	    (WHEN (NOT (= (view-scale view) graphic-image-scale))
-	      (SETF graphic-image-scale (view-scale view)) 
+	      (SETF graphic-image-scale (view-scale view))
 	      (extent-changed graphic-image)
 	      (graphic-extent graphic-image))
 	    (IF tile-p
@@ -235,9 +224,9 @@
 		    (SETF (gstate-value gstate :ts-y) (get-tile-y ty)))
 		  (view-draw-image view
 				   (extent-rect-xmin world-extent) (extent-rect-ymin world-extent)
-				   (extent-rect-xmax world-extent) (extent-rect-ymax world-extent) 
+				   (extent-rect-xmax world-extent) (extent-rect-ymax world-extent)
 				   image-content  gstate))
-		
+
 		(MULTIPLE-VALUE-BIND (x y) (transform-point (graphic-world-transform  graphic-image)
 							    graphic-image-base-x
 							    graphic-image-base-y)
@@ -257,7 +246,7 @@
 (DEFMETHOD normalize-graphic :before ((graphic-image graphic-image))
   (with-slots (extent graphic-image-base-x graphic-image-base-y graphic-image-extent-x graphic-image-extent-y
 		      graphic-image-extent-width graphic-image-extent-height image-content transform) graphic-image
-    
+
     (IF (AND graphic-image-extent-x graphic-image-extent-y graphic-image-extent-width graphic-image-extent-height)
 	(MULTIPLE-VALUE-BIND (x-min y-min) (transform-point transform graphic-image-extent-x graphic-image-extent-y)
 	  (MULTIPLE-VALUE-BIND (x-max y-max) (transform-point transform
@@ -275,7 +264,7 @@
 
 (DEFUN compute-base-origin (graphic-image view)
   "Return the  baseline coordinate of the graphic-image"
-  (DECLARE (VALUES (type ocoord x y)))
+
   (with-slots (graphic-image-gravity transform image-content extent graphic) graphic-image
     (LET ((world-extent (IF (valid-extent-p extent) extent (graphic-extent graphic-image))))
       (with-extent-values world-extent extent-xmin extent-ymin extent-xmax extent-ymax extent-width extent-height
@@ -286,7 +275,7 @@
 				  (height (/ (image-height image-content) scale-y)))
 
 			    (CASE graphic-image-gravity
-			      
+
 			      (:southwest  (VALUES  extent-xmin
 						    extent-ymin  ))
 			      (:northwest  (VALUES  extent-xmin
@@ -307,12 +296,3 @@
 						    (+ (- extent-ymin (/ height 2.0)) (/ extent-height 2.0 ))))
 			      (t           (VALUES   extent-xmin
 						     extent-ymin))))))))
-
-
-
-
-
-
-
-
-

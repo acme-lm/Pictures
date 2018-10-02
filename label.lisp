@@ -22,28 +22,6 @@
 (in-package "PICTURES")
 
 
-(export '(
-	  make-label
-	  label-base-x
-	  label-base-y
-	  label-extent-x
-	  label-extent-y
-	  label-extent-height
-	  label-extent-width
-	  label-gravity
-	  label-font-size
-	  label-font-family
-	  label-extent-clip-p
-	  label-angle
-	  label-string
-	  label-reverse-p
-	  label-filled-background-p
-	  label-font
-	  label
-	  )
-	'pictures)
-
-
 (DEFCONSTANT  minimum-pixel-size-to-display 4.0)
 
 (DEFMACRO change-font-if-scale-values-not-equal ( label label-view-scale view)
@@ -66,71 +44,71 @@
 ;Function: make-label
 (defclass label (extent-cache graphic)
   (
-   (label-string       :type    string 
+   (label-string       :type    string
 		       :initarg :label-string
 		       :initform (MAKE-STRING 10)
 		       :documentation  "the string to be displayed ")
-   
+
    (label-base-x     :type	(OR null ocoord)
-		     :accessor label-base-x 
+		     :accessor label-base-x
 		     :initarg :base-x
 		     :initform nil
 		     :documentation "object x-coordinate of lower left corner of the base-line of the label string")
-   
+
    (label-base-y     :type (OR null ocoord)
 		     :accessor label-base-y
 		     :initarg :base-y
 		     :initform nil
 		     :documentation "object y-coordinate of lower left corner of the base-line of the label string")
-   
+
    (label-extent-x     :type (OR null ocoord)
 		       :accessor label-extent-x
 		       :initarg :extent-x
 		       :initform nil
 		       :documentation "object x-coordinate of the lower left corner of the extent of the label")
-   
+
    (label-extent-y     :type	(OR null ocoord)
 		       :accessor label-extent-y
 		       :initarg :extent-y
 		       :initform nil
 		       :documentation "object y-coordinate of the lower left corner of the extent of the label")
-   
-   
+
+
    (extent-height      :type		(or null ocoord)
 		       :accessor label-extent-height
 		       :initarg	:extent-height
 		       :initform nil
 		       :documentation "the of the height of the extent of the label")
-   
+
    (extent-width       :type		(or null ocoord)
 		       :accessor label-extent-width
 		       :initarg	:extent-width
 		       :initform nil
 		       :documentation "width of the width of the extent fo the label")
-   
+
    (label-gravity     :type  symbol
 		      :accessor label-gravity
 		      :initarg :gravity
 		      :initform :southwest
 		      :documentation "the gravity of the label within a frame")
-   
+
    (label-view-scale  :type real
 		      :accessor label-view-scale
 		      :initform 1.0
 		      :documentation "the view scale factor, used to check and see if the view scale has changed")
-   
+
    (label-font-size   :type (OR null real)
 		      :accessor label-font-size
 		      :initarg :font-size
 		      :initform 10
 		      :documentation "the local coordinate size of a font, one point is on local coordinate unit")
-   
-   
+
+
    (label-font-family   :type (OR null string font-family)
 			:accessor label-font-family
 			:initform nil
 			:documentation "The  font family to be displayed")
-   
+
    (label-font   :type (OR null font string)
 		 :initform nil
 		 :documentation "The font that is to be displayed")
@@ -221,10 +199,10 @@
 		      extent-width extent-height views extent extent-valid-p) label
     (UNLESS gstate  (SETF gstate (make-gstate)))	;create an empty gstate
     (IF (AND  label-extent-x label-extent-y)
-	
+
 	nil
-	
-	(UNLESS (AND label-base-x label-base-y) 
+
+	(UNLESS (AND label-base-x label-base-y)
 	  (SETF label-base-x 0
 		label-base-y 0)))
     (WHEN (OR (gstate-background gstate) filled-background-p) (SETF (label-filled-background-p label) t))
@@ -273,8 +251,8 @@
 
 (DEFMETHOD (SETF label-base-x) :before  (x (label label) )
   (with-slots (extent label-extent-x label-base-x) label
-    (WHEN label-extent-x 
-      
+    (WHEN label-extent-x
+
       (SETF label-extent-x (+ label-extent-x (- x label-base-x))))
     )
   (extent-changed label))
@@ -282,8 +260,8 @@
 
 (DEFMETHOD (SETF label-base-y) :before ( y (label label))
   (with-slots (extent label-extent-y label-base-y) label
-    (WHEN label-extent-y 
-      
+    (WHEN label-extent-y
+
       (SETF label-extent-y (+ label-extent-y (- y label-base-y))))
     )
   (extent-changed label))
@@ -336,9 +314,9 @@
 (defmethod graphic-contains-p ((label label)  x y &optional pixel-size)
   (declare (type wcoord x y))
   (DECLARE (IGNORE pixel-size))
-  (declare (values boolean))
+
   (IF (label-angle-extent label)
-      (inside-p (label-angle-extent label) (make-point :x x :y y)) 
+      (inside-p (label-angle-extent label) (make-point :x x :y y))
       (let* ((extent (world-extent label)))
 	(and (>= x (extent-rect-xmin extent))
 	     (>= y (extent-rect-ymin extent))
@@ -362,7 +340,7 @@
     (with-slots (extent label-font-size label-view-scale label-font-size label-font
 			label-font-family label-extent-x label-extent-y
 			extent-width extent-height transform label-extent-clip-p transform) label
-      (PROG1 
+      (PROG1
 	(COND
 	  ((label-angle-extent label)
 	   (LET ((point-seq (label-angle-extent label)))
@@ -379,10 +357,10 @@
 					       :ymin   y
 					       :xmax   (+ x width -1)
 					       :ymax   (+ y height -1))))))
-	  
+
 	    (t (view-label-extents label scale view )))
 	(UNLESS (= label-view-scale scale)
-	  (assure-or-make-valid-label-font label-font (* scale label-font-size) view)) 
+	  (assure-or-make-valid-label-font label-font (* scale label-font-size) view))
       ))))
 
 
@@ -394,16 +372,16 @@
 	       label-font-family-name label-font transform) label
     (LET* ((font (assure-or-make-valid-label-font
 		   label-font(* (scale-point (graphic-world-transform label) 1 1) label-font-size scale)  view)))
-      
+
       (MULTIPLE-VALUE-BIND (width ascent descent)
 	  (text-extents font  (label-string label))
 	(UNLESS (AND label-base-x label-base-y)
 	  (MULTIPLE-VALUE-BIND (x y) (compute-baseline-origin label (view-scale-x view) (view-scale-y view))
 	    (SETF label-base-x x
 		  label-base-y y)))
-	(MULTIPLE-VALUE-BIND (xmin ymin) (transform-point transform label-base-x  
+	(MULTIPLE-VALUE-BIND (xmin ymin) (transform-point transform label-base-x
 							  label-base-y )
-	
+
 	(LET* (
 	       (scale-x (view-scale-x view))
 	       (scale-y (view-scale-y view))
@@ -412,7 +390,7 @@
 			 :xmax  (+ xmin (/ width scale-x) 1)
 			 :ymin  (- ymin (/ (+ descent 2) scale-y) )
 			 :ymax  (+ ymin (/ (+ ascent 2) scale-y)))))
-	  
+
 	  extent))))))
 
 (DEFMACRO set-rotated-extent ()
@@ -428,11 +406,11 @@
 	    (SETF s2  (/ (* s1 (1+ dx2)) s)
 		 x (+ x (* dy s2))
 		 y (+ y (* (- dx) s2)))
-	    (COND	       
+	    (COND
 	      ((OR (= quad 0) (= quad 3))
 		(IF (label-angle-extent label)
 		    (SETF (ELT vertices 0) xstart           (ELT vertices 1)  ystart
-			  (ELT vertices 2)  x               (ELT vertices 3)  y 
+			  (ELT vertices 2)  x               (ELT vertices 3)  y
 			  (ELT vertices 4) (+ x (* dy s2))      (ELT vertices 5) (- y (* (- dx) s2))
 			  (ELT vertices 6) (+ xstart (* dy s2)) (ELT vertices 7) (- ystart (* (- dx) s2)))
 		    (SETF (label-angle-extent label)
@@ -444,7 +422,7 @@
 		(t
 		 (IF (label-angle-extent label)
 		    (SETF (ELT vertices 0) xstart           (ELT vertices 1)  ystart
-			  (ELT vertices 2)  x               (ELT vertices 3)  y 
+			  (ELT vertices 2)  x               (ELT vertices 3)  y
 			  (ELT vertices 4) (- x (* dy s2))      (ELT vertices 5) (+ y (* (- dx) s2))
 			  (ELT vertices 6) (- xstart (* dy s2)) (ELT vertices 7) (+ ystart (* (- dx) s2)))
 		    (SETF (label-angle-extent label)
@@ -471,7 +449,7 @@
 		     -1))
 	  (increment (IF (= start 0) 1 -1))
 	  s2)
-     
+
      (DO ((pos start (+ increment pos)))
 	 ((= pos stop)
 	  (set-rotated-extent))
@@ -494,7 +472,7 @@
 	   (SETF s2  (/ (* s1 (1+ dx2)) s)
 		 x (+ x (* dy s2))
 		 y (+ y (* (- dx) s2))))
-	 
+
 	 ))
           (extent-changed label)
 	  (graphic-extent label)
@@ -503,15 +481,15 @@
 (DEFMACRO label-visible-p (graphic)
   `(AND (NOT (AND (and min-x min-y width height)			; Was optional rect given
 			   (not (graphic-within-p ,graphic min-x min-y width height))
-			   (not (graphic-intersects-p ,graphic min-x min-y width height)))) 
+			   (not (graphic-intersects-p ,graphic min-x min-y width height))))
 	(viewable-p ,graphic)))
 
 (defmethod draw-graphic ((label label) (view view)
-			 &optional min-x min-y width height) 
+			 &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
 
   (WHEN  (label-visible-p label)
-    (with-slots (gstate label-extent-clip-p label-base-x label-base-y label-view-scale label-font-family 
+    (with-slots (gstate label-extent-clip-p label-base-x label-base-y label-view-scale label-font-family
 			label-angle label-extent-x label-extent-y extent-width extent-height
 			label-font-family-name label-string label-font transform label-font-size extent) label
       (LET ((world-transform (graphic-world-transform label))
@@ -523,16 +501,16 @@
 							   (make-font-family  label-font-family (contact-display view)))))
 	(SETF label-font (find-font label-font-family
 				    (* (scale-point world-transform 1 1) label-font-size label-view-scale )))
-	
+
 	(MULTIPLE-VALUE-BIND (x y) (compute-baseline-origin label (view-scale-x view) ( view-scale-y view))
 	  (UNLESS (AND label-base-x label-base-y)
 	    (SETF label-base-x  x)
 	    (SETF  label-base-y y)))
-	
+
 	(UNLESS  (extent-valid-p label) (graphic-extent label))
 	(WHEN ( >= (* label-font-size (* (scale-point world-transform 1 1) label-view-scale ))
 	       (* 0.5 (font-size (find-font label-font-family 1))))
-	  (IF label-extent-clip-p 
+	  (IF label-extent-clip-p
 	      (SETF (gstate-value gstate :clip-mask) (label-rectangle-mask label view ))
 	      (SETF (gstate-value gstate :clip-mask) :none)
 	      )
@@ -543,14 +521,14 @@
 		    (view-draw-image-text view x y label-string  (graphic-gstate label))
 		    (view-draw-text view x y label-string  (graphic-gstate label)))
 		(draw-rotated-text))))))))
-			
-	    
+
+
 
 
 
 (DEFUN compute-baseline-origin (label  scale-x scale-y)
   "Return the  baseline coordinate of the label"
-  (DECLARE (VALUES (type ocoord x y)))
+
   (with-slots (extent label-gravity label-extent-x label-extent-y (label-extent-height extent-height)
 			     (label-extent-width extent-width) label-font label-string) label
     (MULTIPLE-VALUE-BIND (width ascent descent)
@@ -583,7 +561,7 @@
 	  (t (VALUES extent-x extent-y))
 	  )
 	))))
-  
+
 
 (DEFUN label-rectangle-mask (label view )
   (LET ((local-vector (make-array '(4) :adjustable t :fill-pointer 0))
@@ -608,7 +586,7 @@
 
 (DEFMETHOD normalize-graphic :before ((label label))
   (with-slots (label-base-x label-base-y label-extent-x label-extent-y extent-width extent-height transform) label
-    
+
     (MULTIPLE-VALUE-BIND (x y) (transform-point transform label-base-x label-base-y)
       (SETF (label-base-x label) x
 	    (label-base-y label) y))
@@ -622,4 +600,3 @@
 		extent-height (- y1 y)))))))
 
 
-

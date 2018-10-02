@@ -24,14 +24,6 @@
 
 (DEFPARAMETER  grabber-side-size 6 "This is the size of the width and the height of the grabber")
 
-(export '(
-	  make-selection-scene
-	  view-transform-graphic
-	  view-move-graphic
-	  view-scale-graphic
-	  view-rotate-graphic
-	  )
-	'pictures)
 
 (DEFUN round-vector (VECTOR)
   "round all of the values of a vector"
@@ -51,15 +43,15 @@
 (DEFMACRO scene-visible-p (graphic)
   `(AND (NOT (AND (and min-x min-y width height)			; Was optional rect given
 			   (not (graphic-within-p ,graphic min-x min-y width height))
-			   (not (graphic-intersects-p ,graphic min-x min-y width height)))) 
-	
+			   (not (graphic-intersects-p ,graphic min-x min-y width height))))
+
 	(viewable-p ,graphic)))
 
 (defmethod draw-graphic ((scene selection-scene) (view view)
                            &optional min-x min-y width height)
   (DECLARE (IGNORE  min-x min-y width height))
   (with-slots (elements extent) scene
-    (WHEN (viewable-p scene) 
+    (WHEN (viewable-p scene)
 	(graphic-world-transform scene)	; Cache our transform
 	(DOTIMES (position (length elements))
 	  (draw-graphic (ELT elements position) view )
@@ -81,17 +73,17 @@
 		   :accessor grabber-name
 		   :documentation "the position name of the grabber in the the grabber-rect")
 
-   (opposing       
+   (opposing
 		    :initform nil
 		    :accessor opposing-grabber
 		    :documentation "the grabber that is opposite of this instance of grabber")
-  
+
     )
   (:documentation "This is special class of filled rectangle to represent the grabbers of the extent rectangle"))
 
 (defmethod scene-insert  ((scene selection-scene) graphic &optional pos )
  (DECLARE (IGNORE pos))
-  (declare (values graphic))
+
   (with-slots (elements parent) scene                           ;to a scene
  	 (VECTOR-PUSH-EXTEND graphic elements 1) ;insert after last graphic
 	 )			; Set its new parent
@@ -113,8 +105,8 @@
   (declare (IGNORE  min-x min-y width height))
   (WHEN (viewable-p rectangle)
     (LET ((grabber-rect-transform (grabber-rect-transform view)))
-      (with-slots (vertices transform) rectangle    
-	(with-vector temp-vertices 
+      (with-slots (vertices transform) rectangle
+	(with-vector temp-vertices
 	  (copy-to-vector vertices temp-vertices)
 	  (normalize-transform transform)
 	  (scale-transform transform (t11 grabber-rect-transform) (t22 grabber-rect-transform )
@@ -126,7 +118,7 @@
 
 (defclass grabber-rect (scene)
   (
-  
+
   (graphic          :type   (OR null graphic)
 		    :initform nil
 		    :accessor grabber-graphic
@@ -135,7 +127,7 @@
 		    :initform nil
 		    :accessor north-grabber
 		    :documentation "the north grabber of the grabber-rect")
-  
+
   (south-grabber          :type   (OR null grabber)
 		    :initform nil
 		    :accessor south-grabber
@@ -182,7 +174,7 @@
                            &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
   (with-slots (elements extent) scene
-    (WHEN (viewable-p scene) 
+    (WHEN (viewable-p scene)
 	(graphic-world-transform scene)	; Cache our transform
 	(DOTIMES (position (length elements))
 	  (draw-graphic (ELT elements position) view min-x min-y width height)
@@ -193,12 +185,12 @@
   ()
   (:documentation "This is special  class of rectangle to represent the background grabber"))
 
-;Define a graphic-contains-p method for the background-grabber that will use the graphic-contains-p 
+;Define a graphic-contains-p method for the background-grabber that will use the graphic-contains-p
 ;method of the the selected graphic
 
 (defmethod graphic-contains-p ((grabber background-grabber) x y &optional pixel)
   (declare (type wcoord x y ))
-  (declare (values boolean))
+
   (graphic-contains-p (grabber-graphic (graphic-parent grabber)) x y pixel))
 
 (DEFMETHOD graphic-contains-p ((filled-polygon grabber) x y &optional pixel)
@@ -211,7 +203,7 @@
 		     (copy-to-vector vertices temp-vertices)
 		     (transform-point-seq (graphic-world-transform filled-polygon) temp-vertices)
 
-		     (WHEN 
+		     (WHEN
 		       (inside-p temp-vertices (make-point :x x :y y)) t ))
 	)
        )
@@ -224,7 +216,7 @@
 	 :vertices (complete-rectangle x y (+ x width) (+ y height))
 	 :transform transform
 	 ))
-    
+
 
 (DEFMETHOD initialize-instance :after ((background-grabber background-grabber) &key vertices)
     (SETF (vertices background-grabber) vertices))
@@ -234,7 +226,7 @@
 		     &rest options
 		     &key &allow-other-keys)
   (declare (type wcoord x y ))
-  (declare (values rectangle))
+
   (apply #'make-instance 'grabber
 	 :allow-other-keys t
 	 :grabber-name name
@@ -301,11 +293,11 @@
 	(heigth (* sign-y size))
 	(negheigth (* sign-y negsize))
 	(transform (grabber-rect-transform view)))
-    
+
     (with-slots (north-grabber northwest-grabber northeast-grabber
 			       south-grabber southwest-grabber southeast-grabber
 			       east-grabber west-grabber center-grabber background-grabber) grabber-rect
-      
+
       (scene-insert grabber-rect
 		    (SETF background-grabber (MAKE-background-GRABBER  'background-grabber 0 0 0 0 (grabber-transform) )))
       (scene-insert grabber-rect
@@ -324,8 +316,8 @@
 		    (SETF southeast-grabber (MAKE-GRABBER  'southeast-grabber 0 0 negwidth heigth (grabber-transform) )))
       (scene-insert grabber-rect
 		    (SETF northeast-grabber (MAKE-GRABBER  'northeast-grabber 0 0 negwidth negheigth (grabber-transform))))
-      
-      
+
+
       (SETF (opposing-grabber northwest-grabber)  southeast-grabber
 	    (opposing-grabber northeast-grabber) southwest-grabber
 	    (opposing-grabber north-grabber) south-grabber
@@ -335,19 +327,19 @@
 	    (opposing-grabber southeast-grabber) northwest-grabber
 	    (opposing-grabber southwest-grabber) northeast-grabber
 	    (opposing-grabber background-grabber) northeast-grabber))
-    
+
     grabber-rect
     ))
 
 (DEFMACRO get-motion-notify-event (grabber-name fixed-x fixed-y px py)
   `(COND
-      
+
     ((grabber-corner-p ,grabber-name)
       (LIST 'scale-rubberband ,fixed-x  ,fixed-y))
-    
+
     ((grabber-north-south-p ,grabber-name)
       (LIST 'scale-rubberband-fixed-width  ,fixed-x  ,fixed-y  ,px))
-    
+
     ((grabber-east-west-p ,grabber-name)
      (LIST 'scale-rubberband-fixed-height  ,fixed-x ,fixed-y ,py))
 
@@ -370,7 +362,7 @@
 
 
 
-	  
+
 (DEFMETHOD view-transform-graphic ((grabber grabber) (view view) &key (event :button-1))
   (LET* ((pixel-size (view-pixel-size view))
 	 (grabber-name (grabber-name grabber))
@@ -398,16 +390,16 @@
 	      (WHEN (= *py* *fixed-y*) (SETF *py* (FLOOR (+ *py* pixel-size))
 					     *delta-py* (FLOOR (+ *delta-py* pixel-size))))
 	      )
-	    
+
 	    (process-motion-notify-events view display *fixed-x* *fixed-y* *px* *py* highlight-color)
 	    (erase-grabber-rects view  selection-elements (FILL-POINTER  selection-elements))
 	    (repair-view view)
-	    
+
 	    (if (EQ grabber-name 'background-grabber)
 		(move-selected-graphics view selection-elements (FILL-POINTER  selection-elements)
 					(- (view-untransform-x view *fixed-x*) (view-untransform-x view fixed-x ))
 					(-  (view-untransform-y view *fixed-y*) (view-untransform-y view fixed-y)))
-		
+
 		(scale-selected-graphics
 		  view selection-elements (FILL-POINTER  selection-elements)
 		  (scale-value *fixed-x* px1 *px*)
@@ -417,7 +409,7 @@
 	    )))
       (repair-view view))))
 
-	  
+
 (DEFMETHOD view-move-graphic ((grabber grabber) (view view) &key (event :button-1))
   (LET* ((pixel-size (view-pixel-size view))
 	 (grabber-name (grabber-name grabber))
@@ -429,13 +421,13 @@
 	 (highlight-color (view-highlight-color view))
 	 (selection-elements (scene-elements (view-selection-scene view)))
 	 )
-  
+
   (with-event (x y display)
     (LET* ((*px* px1  )                   ( *py*  py1)
 	   (*fixed-x* fixed-x)            (*fixed-y* fixed-y)
 	   (*delta-fx* (- fixed-x x  ))   ( *delta-fy* (-  fixed-y y))
 	   (*delta-px* (- x *px* ))       (*delta-py* (- y *py*)) )
-      
+
       (DECLARE (SPECIAL *px* *py* *fixed-x* *fixed-y* *delta-fx* *delta-fy* *delta-px* *delta-py* *transform*))
       (WHEN (= *px* *fixed-x*) (SETF *px* (FLOOR (+ *px* pixel-size))
 				     *delta-px* (FLOOR (+ *delta-px* pixel-size))))
@@ -446,14 +438,14 @@
 	(process-motion-notify-events view display *fixed-x* *fixed-y* *px* *py* highlight-color)
 	(erase-grabber-rects view  selection-elements (FILL-POINTER  selection-elements))
 	(repair-view view)
-	
+
 	(move-selected-graphics view selection-elements (FILL-POINTER  selection-elements)
 				(- (view-untransform-x view *fixed-x*) (view-untransform-x view fixed-x ))
 				(-  (view-untransform-y view *fixed-y*) (view-untransform-y view fixed-y))))))
    (repair-view view)))
 
 
-	  
+
 (DEFMETHOD view-scale-graphic ((grabber grabber) (view view) &key uniform (event :button-1))
   (LET* (
 	 (grabber-name (grabber-name grabber))
@@ -471,7 +463,7 @@
 	       (*fixed-x* fixed-x)            (*fixed-y* fixed-y)
 	       (*delta-fx* (- fixed-x x  ))   ( *delta-fy* (-  fixed-y y))
 	       (*delta-px* (- x *px* ))       (*delta-py* (- y *py*)) )
-	  
+
 	  (DECLARE (SPECIAL *px* *py* *fixed-x* *fixed-y* *delta-fx* *delta-fy* *delta-px* *delta-py* *transform*))
 	  (with-event-mode (view
 			     (LIST `(:motion-notify ,event)(get-motion-notify-event grabber-name fixed-x fixed-y px1 py1))
@@ -479,7 +471,7 @@
 	    (UNLESS (EQ grabber-name 'background-grabber)
 	      (process-motion-notify-events view display *fixed-x* *fixed-y* *px* *py* highlight-color))
 	    (erase-grabber-rects view  selection-elements (FILL-POINTER  selection-elements))
-	    (repair-view view)	  
+	    (repair-view view)
 	    (scale-selected-graphics
 	      view selection-elements (FILL-POINTER  selection-elements)
 	      (scale-value *fixed-x* px1 *px*)
@@ -523,9 +515,9 @@
        (transform-y view (rectangle-origin-y (south-grabber  parent)))))))
 
 
-			    
+
 (DEFUN erase-grabber-rects ( view selection-elements selection-length )
-  (DOTIMES (pos  SELECTION-LENGTH)	
+  (DOTIMES (pos  SELECTION-LENGTH)
     (LET* ((highlight (ELT selection-elements pos))
 	   (graphic (grabber-graphic highlight)))
       (UNLESS (EQ (graphic-sensitivity highlight) :hidden)	;Is the grabber-rect being used?
@@ -536,16 +528,16 @@
 
 (DEFUN scale-selected-graphics (view selection-elements selection-length x-scale y-scale fixed-point)
   (DECLARE (IGNORE view))
-  (DOTIMES (pos  SELECTION-LENGTH)			
+  (DOTIMES (pos  SELECTION-LENGTH)
 	  (LET* ((highlight (ELT selection-elements pos))
 		 (graphic (grabber-graphic highlight)) )
 	    (UNLESS (EQ (graphic-sensitivity highlight) :hidden)	 ;Is the grabber-rect being used?
 	      (MULTIPLE-VALUE-BIND (fx fy)
 		  (graphic-fixed-point graphic fixed-point)
-		(scale-transform graphic x-scale y-scale fx fy)  
+		(scale-transform graphic x-scale y-scale fx fy)
 		(graphic-extent graphic)
 		(extent-compute highlight ))))))
- 
+
 (DEFUN move-selected-graphics (view selection-elements selection-length delta-x delta-y)
   (DECLARE (IGNORE view))
   (DOTIMES (pos  SELECTION-LENGTH)				;Move the graphics in the scene
@@ -570,7 +562,7 @@
 	   (fixed-y  (fixed-y opposing view))
 	   (px1  (transform-x view (rectangle-origin-x grabber)))
 	   (py1  (transform-y view (rectangle-origin-y grabber))))
-      
+
       (when (editable-p (grabber-graphic (graphic-parent grabber)))
 	(UNWIND-PROTECT
 	    (progn
@@ -579,12 +571,12 @@
 	      (with-event (x y display)
 		(LET ((*px* px1 ) ( *py*  py1 ) (*fixed-x* fixed-x)(*fixed-y* fixed-y)
 		      (*transform* (make-transform)))
-		  
+
 		  (DECLARE (SPECIAL *px* *py* *fixed-x* *fixed-y* *delta-fx* *delta-fy* *delta-px* *delta-py* *transform*))
-		  
+
 		  (with-special-vector *rotate-vector*
 		    (SETF (display-after-function display) #'display-force-output)
-		    
+
 		    (SETF (FILL-POINTER *rotate-vector*) 10)
 		    (SETF (ELT *rotate-vector* 0) *fixed-x*    (ELT *rotate-vector* 1) *fixed-y*
 			  (ELT *rotate-vector* 2) *px*         (ELT *rotate-vector* 3) *fixed-Y*
@@ -593,7 +585,7 @@
 			  (ELT *rotate-vector* 8) *fixed-x*    (ELT *rotate-vector* 9) *fixed-y*)
 		    (with-event-mode (view `((:motion-notify ,event) (rotate-box))
 					   `((:button-release ,event) (view-button-release t)))
-		      (drawlines-with-gc view highlight-color *rotate-vector* )   
+		      (drawlines-with-gc view highlight-color *rotate-vector* )
 		      (CATCH :release
 			(LOOP
 			  (process-next-event display )))
@@ -611,21 +603,21 @@
 				(view-untransform-x view *px*)(view-untransform-y view *py*))
 		    (grabber-name opposing)))))
 	  (ungrab-pointer (contact-display view))))
-      
+
       (repair-view view))))
- 
+
 (DEFUN rotation (fixed-x fixed-y x y x2 y2)
   "Determine the difference in the angle between FIXED-X:FIXED-Y X1:Y1 and FIXED-X:FIXED-Y X2:Y2."
-		     
+
   (- (IF (= x2 fixed-x)
 	    (radians 0)
 	    (+ (ATAN (/ (-   y2 fixed-y) (-  x2 fixed-x )))
 	       (IF (< (* (SIGNUM (-  x fixed-x ))(-  x2 fixed-x )) 0) (radians 180) 0)))
 	(IF (= fixed-x x)
 	    0
-	    (ATAN (/ (-  y fixed-y ) (-  x fixed-x ))))))	
-		     
-  
+	    (ATAN (/ (-  y fixed-y ) (-  x fixed-x ))))))
+
+
 
 
 (DEFUN rotate-selected-graphics (view selection-elements selection-length rotation fixed-point)
@@ -661,8 +653,8 @@
 ;  call the world-extent method (defined below).
 
 (defmethod extent-compute ((grabber-rect grabber-rect))
-  (declare (values (or null extent-rect)))
-  
+
+
   (with-slots (graphic  extent) grabber-rect
     (WHEN  graphic
       (LET* ((graphic-extent (world-extent graphic))
@@ -694,7 +686,7 @@
 	    (SETF (rectangle-origin-y (northeast-grabber grabber-rect)) ymax)
 	    (SETF (rectangle-origin-x (southeast-grabber grabber-rect)) xmax)
 	    (SETF (rectangle-origin-y (southeast-grabber grabber-rect)) ymin)
-	    
+
 	    (SETF (rectangle-origin-x (north-grabber grabber-rect)) (+ xmin width size))
 	    (SETF (rectangle-origin-y (north-grabber grabber-rect)) ymax)
 	    (SETF (rectangle-origin-x (south-grabber grabber-rect)) (+ xmin width size))
@@ -703,17 +695,17 @@
 	    (SETF (rectangle-origin-y (east-grabber grabber-rect)) (+ ymin height size))
 	    (SETF (rectangle-origin-x (west-grabber grabber-rect)) xmin)
 	    (SETF (rectangle-origin-y (west-grabber grabber-rect)) (+ ymin height size))
-	    
+
 	    (SETF (rectangle-origin-x (background-grabber grabber-rect)) xmin)
 	    (SETF (rectangle-origin-y (background-grabber grabber-rect)) ymin)
-	    
+
 	    ))))
     extent))
 
 
 
 (defmethod extent-compute ((grabber grabber))
-  (declare (values (or null extent-rect)))
+
   (with-slots (vertices) grabber
     (LET  ((x-min (rectangle-origin-x grabber))
 	   (y-min (rectangle-origin-y grabber)))

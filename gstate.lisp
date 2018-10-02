@@ -22,32 +22,6 @@
 (in-package "PICTURES")
 
 
-(export '(
-	  gstate-equal
-	  make-gstate
-	  gstate-value
-	  pixelp
-	  gstate-foreground
-	  gstate-background
-	  gstate-dashes
-	  gstate-function
-	  gstate-line-width
-	  gstate-line-style
-	  gstate-cap-style
-	  gstate-join-style
-	  gstate-fill-style
-	  gstate-fill-rule
-	  gstate-arc-mode
-	  gstate-tile
-	  gstate-stipple
-	  remove-gstate-value
-	  gstate-combine
-	  gstate-copy
-	  clear-gstate 
-	  )
-	'pictures)
-
-
 ;Private Macro: put-hash
 ;  A slightly nicer syntax for adding keys to a hash table.
 
@@ -86,7 +60,7 @@
 (defmethod  gstate-value ((gstate gstate) keyword)
   "print the value of a gstate keyword. Retrun nil if not defined"
   (declare (type keyword keyword))
-  (declare (values value))
+
   (with-slots ((ga gstate-array)) gstate
     (with-gstate-value-place
       (CASE keyword
@@ -111,7 +85,7 @@
 	(:join-style (ELT ga join-style))
 	(:stipple (ELT ga stipple))
 	(:stipple-pix (ELT ga stipple-pix))
-	
+
 	(otherwise (VALUES  (GETHASH keyword (slot-value gstate 'gstate-hash))))))))
 
 (defmethod (SETF gstate-value) ((value xlib:pixmap) (gstate gstate) (keyword (eql :foreground)))
@@ -123,7 +97,7 @@
 ;  Return a new gstate object with the given attribute values and return an alist of value not defined for X window gcontexts
 
 (defun make-gstate (&rest options)
-  
+
   (LET ((gstate (MAKE-INSTANCE 'gstate)) )
     (DO*
       ((options-list options (CDDR options-list))
@@ -131,7 +105,7 @@
        ( value (SECOND options-list)(SECOND options-list)))
       ((EQ options-list nil) gstate)
       (IF  (KEYWORDP keyword)
-	   (SETF (gstate-value gstate keyword) value) 
+	   (SETF (gstate-value gstate keyword) value)
 	   (ERROR "%keyword  ~a is not a keyword symbol" keyword)))
    ))
 
@@ -166,7 +140,7 @@
     (LET  ((ga (gstate-array gstate)))
       (LET* (( type-value (SECOND (ASSOC keyword *gstate-type-alist*)))	;get the type list from the master list
 	     )
-	
+
 	(IF type-value				;if the type is "okay" place the keyword pair on the alist
 	    (IF (DOLIST ( gtype type-value nil)	;is type type of the keyword value in the type list
 		  (IF (TYPEP value gtype) (return t)))
@@ -193,7 +167,7 @@
 		  (:join-style (SETF (ELT ga join-style) value))
 		  (:stipple (SETF (ELT ga stipple) value))
 		  (:stipple-pix (SETF (ELT ga stipple-pix) value))
-		  
+
 		  (otherwise (PUT-HASH		;place type keyword pair on the gstate-hashtable
 			       keyword value (slot-value gstate 'gstate-hash)))
 		  )
@@ -211,7 +185,7 @@
   (DECLARE (SPECIAL *gstate-stack*))
   (CALL-next-method)
   (graphic-stack-purge *gstate-stack* )
-  (VALUES 
+  (VALUES
     (WHEN value
       (LET ((ga (slot-value gstate 'gstate-array)))
 	(with-gstate-value-place
@@ -220,7 +194,7 @@
 	  (COND
 	    ((OR (EQ keyword :tile)
 		 (EQ keyword :stipple))
-	     
+
 	     (IF (SYMBOLP value)
 		 (CASE keyword
 		   (:tile  (SETF (ELT ga tile) (LIST value (SYMBOL-VALUE value))))
@@ -229,7 +203,7 @@
 		   (:tile  (SETF (ELT ga tile) (LIST (image-name value)  value)))
 		   (:stipple (SETF (ELT ga stipple) (LIST (image-name value)  value))))
 		 ))
-	    
+
 	    ((OR (EQ keyword :foreground)
 		 (EQ keyword :background))
 	     (COND
@@ -339,7 +313,7 @@
     (SETF (slot-value graphic 'gstate) (make-gstate))))
 
 (DEFMETHOD (SETF gstate-dashes) (dashes (graphic graphic))
-  (IF (OR (listp dashes) (ARRAYP dashes) (AND (NUMBERP dashes) (< -1 dashes 255))) 
+  (IF (OR (listp dashes) (ARRAYP dashes) (AND (NUMBERP dashes) (< -1 dashes 255)))
       (SETF (gstate-value (graphic-gstate graphic) :dashes) dashes)
       (UNLESS dashes (remove-gstate-value (graphic-gstate graphic) :dashes))))
 
@@ -651,7 +625,7 @@
 	(:join-style (SETF (ELT ga join-style) nil))
 	(:stipple (SETF (ELT ga stipple) nil))
 	(:stipple-pix (SETF (ELT ga stipple-pix) nil))
-	
+
 	(otherwise (REMHASH keyword gstate-hash))
 	))))
 
@@ -698,7 +672,7 @@
 
 (defun  gstate-copy ( gstate-1 gstate-2)
   (declare (type (or null gstate) gstate-1 gstate-2))
-  (declare (values gstate))
+
 
   (cond ((eq gstate-1 gstate-2))			; They are already identical!
         (gstate-1					; G-1 is not the empty gstate
@@ -729,7 +703,7 @@
                (PUT-HASH keyword value (gstate-hash gstate-2)))
            (gstate-hash gstate-1))
   (dotimes (var (LENGTH (gstate-array gstate-2)))
-     
+
 		 (UNLESS (ELT (gstate-array gstate-2) var)
 		   (SETF (ELT (gstate-array gstate-2) var)(ELT (gstate-array gstate-1) var))))
   gstate-2)
@@ -750,17 +724,8 @@
 		 (PUT-HASH keyword value (gstate-hash gstate)))
 	     (gstate-hash gstate-1))
     (dotimes (var (LENGTH (gstate-array gstate)))
-      
+
       (UNLESS (ELT (gstate-array gstate) var)
 	(SETF (ELT (gstate-array gstate) var)(ELT (gstate-array gstate-1) var))))
-    
+
     gstate))
-
-
-
-
-
-
-
-
-

@@ -21,11 +21,11 @@
 
 (in-package :cl-user)
 
-(defvar *pictures-directory*  "/arc/lw/pictures/")
-(defvar *pictures-source*   "/arc/lw/pictures/source/")
+(defvar *pictures-directory*  "/org/sbcl/pictures/")
+(defvar *pictures-source*   "/org/lbcl/pictures/source/")
 
 (asdf:defsystem pictures
-  :depends-on (clio)
+  :depends-on (clue)
   :description "Common Lisp 2-D Graphics Library"
   :version "1.0.1"
   :components

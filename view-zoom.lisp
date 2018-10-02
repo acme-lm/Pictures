@@ -21,16 +21,6 @@
 
 (in-package "PICTURES")
 
-  
-(export '(
-	  view-zoom-value
-	  view-zoom-x
-	  view-zoom-y
-	  view-zoom-gravity
-	  view-zoom-in
-	  view-zoom-out
-	  )
-	'pictures)
 
 (DEFMETHOD  view-zoom-value ((view view))
   "the amount the view by"
@@ -93,14 +83,3 @@
 				   (view-zoom-gravity view)
 				   :center))
   (refresh-view view))
-
-
-
-
-
-
-
-
-
-
-

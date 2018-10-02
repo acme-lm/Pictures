@@ -19,22 +19,8 @@
 ;;; Authors: Delmar Hager, James Dutton, Teri Crowe
 ;;; Contributors: Kerry Kimbrough, Patrick Hogan, Eric Mielke
 
-(in-package "PICTURES")
+(in-package :pictures)
 
-
-(export '(
-	  circle-center-x
-	  circle-center-y
-	  circle-radius
-	  circle-center
-	  make-circle
-	  make-filled-circle
-	  make-filled-circle-edge
-	  circle
-	  filled-circle-edge
-	  filled-circle
-	  )
-	'pictures)
 
 ;Circle Class Definition:
 
@@ -42,19 +28,19 @@
   (
    (center-x	:type		wcoord
                 :initarg	:center-x
-		:accessor       circle-center-x 
+		:accessor       circle-center-x
 		:documentation "x-coordinate of the center")
-   
+
    (center-y	:type		wcoord
                 :initarg	:center-y
-		:accessor       circle-center-y 
+		:accessor       circle-center-y
 		:documentation "y-coordinate of the center")
 
    (radius	:type		wcoord
                 :initarg	:radius
-		:accessor       circle-radius 
+		:accessor       circle-radius
 		:documentation	"Radius of the circle")
-   
+
    )
   (:documentation "A graphic that represents a circle in object coordinates"))
 
@@ -81,9 +67,9 @@
                     )
   "Make a circle with the center coordinate of (CENTER-X CENTER-Y) and RADIUS.
 The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
-  
+
   (declare (type wcoord center-x center-y radius))
-  (declare (values circle))
+
 
   (apply #'make-instance 'circle
          :center-x center-x
@@ -102,9 +88,9 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
                             )
   "Make a filled-circle with the center coordinate of (CENTER-X CENTER-Y) and RADIUS.
 The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
-  
+
   (declare (type wcoord center-x center-y radius))
-  (declare (values filled-circle))
+
 
   (apply #'make-instance 'filled-circle
          :center-x center-x
@@ -123,7 +109,7 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
 
   (declare (type wcoord center-x center-y radius))
-  (declare (values filled-circle-edge))
+
 
   (apply #'make-instance 'filled-circle-edge
          :center-x center-x
@@ -147,7 +133,7 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 ;  Returns or changes the object coordinates of the center of the CIRCLE.
 
 (defmethod circle-center ((circle circle))
-  (declare (values center-x center-y))
+
 
   (with-slots (center-x center-y) circle
     (values center-x center-y)))
@@ -171,7 +157,7 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 ;  before returning it.
 
 (defmethod extent-compute ((circle circle))
-  (declare (values (or null extent-rect)))
+
 
   (with-slots (center-x center-y radius transform) circle
     (let (new-center-x new-center-y new-radius-x new-radius-y new-radius)
@@ -195,8 +181,8 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 (defmethod draw-graphic ((circle circle) (view view)
                            &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
-    (with-slots (extent) circle 
-      (WHEN (visible-p circle) 
+    (with-slots (extent) circle
+      (WHEN (visible-p circle)
 	(multiple-value-bind (xmin ymin diameter)
 	    (square-bounding-circle circle)
 	  (view-draw-arc view	; Draw the circle
@@ -215,12 +201,12 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 ;  need to be drawn.
 
 (defmethod draw-graphic ((circle filled-circle) (view view)
-			   &optional min-x min-y width height) 
+			   &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
-  (with-slots (extent) circle 
+  (with-slots (extent) circle
 
-    (WHEN (visible-p circle) 
-      
+    (WHEN (visible-p circle)
+
       (multiple-value-bind (xmin ymin diameter)
 	  (square-bounding-circle circle)
 	(view-draw-filled-arc view	; Draw the circle
@@ -239,10 +225,10 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 ;  the object that lie within the given rectangle need to be drawn.
 
 (defmethod draw-graphic ((circle filled-circle-edge) (view view)
-			   &optional min-x min-y width height) 
+			   &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
-  (with-slots (extent) circle 
-  
+  (with-slots (extent) circle
+
     (WHEN (visible-p circle)
       (with-slots (edge-gstate) circle
 						; Use global temp buffer
@@ -291,7 +277,7 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 ;  CIRCLE is inscribed.
 
 (defun square-bounding-circle (circle)
-  (declare (values x-min y-min width))
+
 
   (with-slots (center-x center-y radius) circle
     (let (new-center-x new-center-y new-radius-x new-radius-y new-radius)
@@ -304,11 +290,3 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
       (values (- new-center-x new-radius)
               (- new-center-y new-radius)
               (* 2 new-radius)))))
-
-
-
-
-
-
-
-

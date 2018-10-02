@@ -19,13 +19,8 @@
 ;;; Authors: Delmar Hager, James Dutton, Teri Crowe
 ;;; Contributors: Kerry Kimbrough, Patrick Hogan, Eric Mielke
 
-(in-package "PICTURES")
+(in-package :pictures)
 
-
-(export '(
-	  make-polygon make-filled-polygon make-filled-polygon-edge
-	  )
-	'pictures)
 
 ;Polygon Class Definition:
 

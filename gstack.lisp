@@ -52,7 +52,7 @@
 
 (proclaim '(inline graphic-stack-empty-p))
 (defun graphic-stack-empty-p (graphic-stack)
-  (declare (values boolean))
+
 
   (zerop (fill-pointer (slot-value graphic-stack 'stack))))
 
@@ -61,9 +61,9 @@
 ;  Empty the given GRAPHIC-STACK and then re-fill it by pushing each of GRAPHIC's
 ;  ancestors onto the stack in order beginning with the root ancestor and ending
 ;  with GRAPHIC itself.
-  
+
 (defmethod graphic-stack-fill ((graphic-stack graphic-stack) graphic)
-  (declare (values graphic-stack))
+
 
   (graphic-stack-purge graphic-stack)				; Empty the stack
   (when graphic							; Nil graphic means end of recursion
@@ -78,23 +78,23 @@
 ;  stack and return the resulting pair.  If neither is found, purge the stack and rebuild
 ;  it by pushing each of the ancestors of GRAPHIC starting with its root ancestor and
 ;  ending with the GRAPHIC itself.  Return the pair containing the GRAPHIC.
-  
+
 (defmethod graphic-stack-find ((graphic-stack graphic-stack) graphic)
-  (declare (values (or null consp)))
+
 
   (do ((parent (graphic-parent graphic))	; Find the parent (for speed)
        (top-graphic				; Loop variable
          (graphic-stack-top-graphic graphic-stack)	; Initialize to top of stack
          (graphic-stack-top-graphic		; Step by popping stack
            (graphic-stack-pop graphic-stack))))
-      
+
       ((cond					; Termination conditions
          ((eq top-graphic graphic))		; Graphic found, do nothing
          ((eq top-graphic parent)		; Parent found,
           (graphic-stack-push graphic-stack graphic))	;   Push graphic onto stack
          ((graphic-stack-empty-p graphic-stack)	; Stack is empty,
           (graphic-stack-fill graphic-stack graphic)))	;   Fill it up
-       
+
        (graphic-stack-top graphic-stack))))	; Return the top entry
 
 
@@ -104,7 +104,7 @@
 ;  it next time.  If GRAPHIC-STACK is empty, this function has no effect.
 
 (defmethod graphic-stack-pop ((graphic-stack graphic-stack))
-  (declare (values graphic-stack))
+
 
   (with-slots (stack) graphic-stack
     (unless (graphic-stack-empty-p graphic-stack)
@@ -118,7 +118,7 @@
 ;  Note that passing nil for GRAPHIC results in clearing everything off the stack.
 
 (defmethod graphic-stack-purge ((graphic-stack graphic-stack) &optional graphic)
-  (declare (values graphic-stack))
+
 
   (if (graphic-stack-empty-p graphic-stack)				; For an empty stack,
       graphic-stack							; just return it.
@@ -134,13 +134,13 @@
 ;  is initially nil).  Return the newly pushed pair.
 
 (defmethod graphic-stack-push ((graphic-stack graphic-stack) graphic)
-  (declare (values consp))
+
 
   (with-slots (stack) graphic-stack
     (let* ((stack-pointer (fill-pointer stack))			; Locals for stack pointer
 	   (current-size  (array-total-size stack))	    	; and current array size
            (top-entry     (AREF  stack stack-pointer)))		; and entry at top of stack
-      
+
       (when (eql stack-pointer current-size)    		; If stack will be full,
         (adjust-array
           stack
@@ -152,7 +152,7 @@
                      (setf (cdr top-entry) (cdar top-entry))		  ; Yes, save it away
                      (setf (cdar top-entry) (cdr top-entry)))		  ; No, use saved object
                  (incf (fill-pointer stack))))  		; Increment stack pointer.
-      
+
       (car (AREF stack stack-pointer)))))    		; Return the pair we just pushed
 
 
@@ -160,8 +160,8 @@
 ; Return the top entry on the given GRAPHIC-STACK
 
 (defun graphic-stack-top (graphic-stack)
-  (declare (values (or null consp)))
-  
+
+
   (with-slots (stack) graphic-stack
     (let ((stack-pointer (fill-pointer stack)))		; Local for stack pointer
 
@@ -174,8 +174,8 @@
 ; Return the graphic part of the top entry on the given GRAPHIC-STACK
 
 (defun graphic-stack-top-graphic (graphic-stack)
-  (declare (values (or null graphic)))
-  
+
+
   (with-slots (stack) graphic-stack
     (let ((stack-pointer (fill-pointer stack)))		; Local for stack pointer
 
@@ -211,7 +211,7 @@
 ;  is created.  Return the newly pushed pair.
 
 (defmethod graphic-stack-push :around ((transform-stack transform-stack) graphic)
-  (declare (values consp))
+
 
   (let* ((current-transform					; Get top transform from stack
            (cdr (graphic-stack-top transform-stack)))
@@ -219,7 +219,7 @@
            (graphic-transform graphic))
          (new-pair						; Push a new pair and remember it
            (call-next-method)))
-    (setf (cdr new-pair)				; Change the stack transform	
+    (setf (cdr new-pair)				; Change the stack transform
           (if (or current-transform graphics-transform)	    ; Is anything there?
               (compose-transform graphics-transform		; Compose the graphic's transform
                                  current-transform		; With the current transform
@@ -256,7 +256,7 @@
 ;  is created.  Return the newly pushed pair.
 
 (defmethod graphic-stack-push :around ((gstate-stack gstate-stack) graphic)
-  (declare (values consp))
+
 
   (let* ((current-gstate					; Get top gstate from stack
            (cdr (graphic-stack-top gstate-stack)))
@@ -264,7 +264,7 @@
            (graphic-gstate graphic))
          (new-pair						; Push a new pair and remember it
            (call-next-method)))
-    
+
     (setf (cdr new-pair)				; Change the stack gstate
           (if (or current-gstate graphics-gstate)	    ; Is anything there?
               (gstate-combine graphics-gstate			; Compose current gstate
@@ -275,7 +275,7 @@
     new-pair))                                           ; Return the new pair
 
 (defmethod graphic-stack-push :around ((gstate-stack edge-gstate-stack) graphic)
-  (declare (values consp))
+
 
   (let* ((current-gstate					; Get top gstate from stack
            (cdr (graphic-stack-top gstate-stack)))
@@ -283,7 +283,7 @@
            (edge-gstate graphic))
          (new-pair						; Push a new pair and remember it
            (call-next-method)))
-    
+
     (setf (cdr new-pair)				; Change the stack gstate
           (if (or current-gstate graphics-gstate)	    ; Is anything there?
               (gstate-combine graphics-gstate  current-gstate ; Compose current gstate
@@ -298,8 +298,3 @@
 
 (defmacro graphic-stack-gstate (stack-entry)
   `(cdr ,stack-entry))
-
-
-
-
-

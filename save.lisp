@@ -19,27 +19,25 @@
 ;;; Authors: Delmar Hager, James Dutton, Teri Crowe
 ;;; Contributors: Kerry Kimbrough, Patrick Hogan, Eric Mielke
 
-(in-package "PICTURES")
+(in-package :pictures)
 
 
-(export '(save-graphic) 'pictures)
-
-; - - - - - - - - - - - - generic function - - - - - - - - - - - - - - 
+; - - - - - - - - - - - - generic function - - - - - - - - - - - - - -
 
 ; - - - - - - - - - - - - base class graphic - - - - - - - - - - -
-(defmethod save-graphic :before ((graphic graphic) (format (eql :nested-forms)) 
+(defmethod save-graphic :before ((graphic graphic) (format (eql :nested-forms))
 			 &optional (stream *standard-output*))
   (normalize-graphic graphic)
   (format stream "(MAKE-~a " (class-name (class-of graphic))))
 
-(defmethod save-graphic ((graphic graphic) (format (eql :nested-forms)) 
+(defmethod save-graphic ((graphic graphic) (format (eql :nested-forms))
 			 &optional (stream *standard-output*))
   (declare (ignore stream))
   ;; subclasses will save their own data in a specialized primary method
   ;; edge-gstate (when applicable), sensitivity, gstate are saved in an :after method
   )
 
-(defmethod save-graphic :after ((graphic graphic) (format (eql :nested-forms)) 
+(defmethod save-graphic :after ((graphic graphic) (format (eql :nested-forms))
 				&optional (stream *standard-output*))
   ;; do edge-gstate first if applicable
   (when (typep graphic 'edge)
@@ -67,19 +65,19 @@
     (format stream "(MAKE-TRANSFORM :t11 ~a :t12 ~a :t21 ~a :t22 ~a :t31 ~a :t32 ~a) "
 	    t11 t12 t21 t22 t31 t32)))
 
-; - - - - - - - - -  gstate - - - - - - - - - - 
+; - - - - - - - - -  gstate - - - - - - - - - -
 (defmethod save-graphic ((graphic gstate) (format (eql :nested-forms))
 			 &optional (stream *standard-output*))
   (format stream "(MAKE-GSTATE ")
   (with-slots (gstate-array gstate-hash) graphic
     ;; save the gstate-array
     (dotimes (pos (length gstate-array))
-      (let ((element (elt gstate-array pos))) 
+      (let ((element (elt gstate-array pos)))
 	(when element
 	  (let ((keyword ;;(first (rassoc pos *gstate-index* :key #'first))))
-		           (first (find pos *gstate-index* :key #'second)))) 
+		           (first (find pos *gstate-index* :key #'second))))
 	    (unless (member keyword *no-storage-methods*)
-	      (format stream  ":~a "  keyword)	  
+	      (format stream  ":~a "  keyword)
 	      (save-graphic (if (consp element) (car element) element) format stream))))))
     ;; save the gstate-hash
     (maphash #'(lambda (keyword value)
@@ -103,7 +101,7 @@
 ; - - - - - - - - - - - - ellipse - - - - - - - - - - -
 (defmethod save-graphic ((graphic ellipse) (format (eql :nested-forms))
 			 &optional (stream *standard-output*))
-    (format stream " ~a ~a ~a ~a " 
+    (format stream " ~a ~a ~a ~a "
 	    (ellipse-origin-x graphic)
 	    (ellipse-origin-y graphic)
 	    (ellipse-width graphic)
@@ -113,7 +111,7 @@
 (defmethod save-graphic ((graphic graphic-image) (format (eql :nested-forms))
 			 &optional (stream *standard-output*))
     (save-graphic (graphic-image-content graphic) format stream)
-    (format stream ":base-x ~a :base-y ~a :gravity :~a  :tile-p ~a " 
+    (format stream ":base-x ~a :base-y ~a :gravity :~a  :tile-p ~a "
 	    (graphic-image-base-x graphic)
 	    (graphic-image-base-y graphic)
 	    (graphic-image-gravity graphic)
@@ -127,13 +125,13 @@
 (defmethod save-graphic ((graphic image-x) (format (eql :nested-forms))
 			&optional (stream *standard-output*))
   (format stream "(XLIB::MAKE-IMAGE-X  :width ~a :height ~a  :depth ~a  :plist "
-	  (image-width graphic) 
+	  (image-width graphic)
 	  (image-height graphic)
 	  (image-depth  graphic))
   (save-graphic (image-plist graphic) format stream)
   (format stream " :format :~a :bytes-per-line ~a :bits-per-pixel ~a ~
-                   :bit-lsb-first-p ~a  :byte-lsb-first-p ~a :data " 
-	  (xlib::image-x-format graphic) 
+                   :bit-lsb-first-p ~a  :byte-lsb-first-p ~a :data "
+	  (xlib::image-x-format graphic)
 	  (xlib::image-x-bytes-per-line graphic)
 	  (xlib::image-x-bits-per-pixel graphic)
 	  (xlib::image-x-bit-lsb-first-p graphic)
@@ -143,8 +141,8 @@
 
 (defmethod save-graphic ((graphic image-xy) (format (eql :nested-forms))
 			&optional (stream *standard-output*))
-  (format stream "(XLIB::MAKE-IMAGE-XY :width ~a :height ~a :depth ~a :plist " 
-	  (image-width graphic) 
+  (format stream "(XLIB::MAKE-IMAGE-XY :width ~a :height ~a :depth ~a :plist "
+	  (image-width graphic)
 	  (image-height graphic)
 	  (image-depth  graphic))
   (save-graphic (image-plist graphic) format stream)
@@ -155,8 +153,8 @@
 
 (defmethod save-graphic ((graphic image-z) (format (eql :nested-forms))
 			&optional (stream *standard-output*))
-    (format stream "(XLIB::MAKE-IMAGE-Z :width ~a :height ~a :depth ~a :plist " 
-	  (image-width graphic) 
+    (format stream "(XLIB::MAKE-IMAGE-Z :width ~a :height ~a :depth ~a :plist "
+	  (image-width graphic)
 	  (image-height graphic)
 	  (image-depth  graphic))
   (save-graphic (image-plist graphic) format stream)
@@ -167,19 +165,19 @@
 ; - - - - - - - - - - - - label - - - - - - - - - - -
 (defmethod save-graphic ((graphic label) (format (eql :nested-forms))
 			 &optional (stream *standard-output*))
-  (with-slots (label-string 
-	       label-base-x 
-	       label-base-y 
-	       label-extent-x 
-	       label-extent-y 
+  (with-slots (label-string
+	       label-base-x
+	       label-base-y
+	       label-extent-x
+	       label-extent-y
 	       extent-height
-	       extent-width 
+	       extent-width
 	       label-gravity
 	       label-angle) graphic
     ;; label-string is required argument to make-label - rest are keywords
     (format stream "\"~a\" :base-x ~a :base-y ~a :extent-x ~a :extent-y ~a ~
                        :extent-width ~a :extent-height ~a :gravity :~a :angle ~a "
-	    label-string label-base-x label-base-y label-extent-x label-extent-y 
+	    label-string label-base-x label-base-y label-extent-x label-extent-y
 	    extent-width extent-height label-gravity label-angle))
   (let ((family (label-font-family graphic)))
     (when family
@@ -209,13 +207,13 @@
 ; - - - - - - - - - - - - rectangle - - - - - - - - - - -
 (defmethod save-graphic ((graphic rectangle) (format (eql :nested-forms))
 			 &optional (stream *standard-output*))
-  (format stream " ~a ~a ~a ~a " 
+  (format stream " ~a ~a ~a ~a "
 	  (rectangle-origin-x graphic)
 	  (rectangle-origin-y graphic)
 	  (rectangle-width graphic)
 	  (rectangle-height graphic))
   ;; check for graphic transforms on rectangles
-  
+
   )
 
 ; - - - - - - - - - scene - - - - - - - - -
@@ -240,13 +238,13 @@
 ;-------------------- Built in type classes ---------------------
 
 ; - - - - - - - - - - - - array - - - - - - - - - - -
-;; warning - for portability's sake I have avoided array handling functions 
-;; that are implementation dependent and have only implemented saving 
-;; 1 & 2 dimensional arrays (the common variety) because I could not 
-;; figure out how to do this in a general manner for n dimensions 
+;; warning - for portability's sake I have avoided array handling functions
+;; that are implementation dependent and have only implemented saving
+;; 1 & 2 dimensional arrays (the common variety) because I could not
+;; figure out how to do this in a general manner for n dimensions
 ;; (i.e. like listarray in TICL).
-;; It could be done in a portable manner with a macro to construct the 
-;; right number of dimensions, but I don't have the time at this writing. 
+;; It could be done in a portable manner with a macro to construct the
+;; right number of dimensions, but I don't have the time at this writing.
 ;; (TAC - 3-28-90)
 (defmethod save-graphic ((graphic array) (format (eql :nested-forms))
 			 &optional (stream *standard-output*))
@@ -317,4 +315,3 @@
 (defmethod save-graphic ((graphic float) (format (eql :nested-forms))
 			&optional (stream *standard-output*))
   (format stream "~a " graphic))
-

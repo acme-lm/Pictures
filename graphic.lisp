@@ -33,55 +33,6 @@
 
 ;;; Type definitions
 
-(export '(
-	  graphic
-	  draw-graphic
-	  draw-graphic-clipped
-	  graphic-extent
-	  world-extent
-	  graphic-contains-p
-	  graphic-intersects-p
-	  graphic-within-p
-	  graphic-fixed-point
-	  graphic-view
-	  graphic-views
-	  graphic-damage
-	  repair-graphic
-	  graphic-parent
-	  graphic-plist
-	  graphic-gstate
-	  graphic-reset
-	  graphic-transform
-	  move-transform
-	  rotate-transform
-	  scale-transform
-	  normalize-graphic
-	  graphic-combined-world-extents
-	  graphic-world-transform
-	  graphic-combined-gstate
-	  scene-elements
-	  graphic-sensitivity
-	  editable-p
-	  selectable-p
-	  viewable-p
-	  subselectable-p
-	  graphic-extent-x
-	  graphic-extent-y
-	  graphic-extent-height
-	  graphic-extent-width
-	  world-extent
-	  grpahic-extent-x
-	  grpahic-extent-y
-	  graphic-extent-height
-	  graphic-extent-width
-
-	  )
-	'pictures)
-
-;class definition is in file class-definitions
-
-;;Method: scene-elements
-
 
 (DEFMETHOD scene-elements ((graphic graphic))
   graphic

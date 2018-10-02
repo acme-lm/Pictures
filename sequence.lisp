@@ -22,30 +22,12 @@
 (in-package "PICTURES")
 
 
-(export '(
-	  length-point-seq
-	  print-seq
-	  vertex-i
-	  vertex-x
-	  vertex-y
-	  length-vertices
-	  point-seq-x-min
-	  point-seq-y-min
-	  point-seq-x-max
-	  point-seq-y-max
-	  find-point-seq-x
-	  find-point-seq-y
-	  insert-vertex
-	  delete-vertex 
-	  )
-	'pictures)
-
 (DEFMACRO  length-point-seq (sequence)
    `(VALUES (FLOOR (length ,sequence) 2)))
 
 (DEFUN print-seq (seq &optional (STREAM t)  return)
   "print the value in the sequence to the stream"
-     
+
      (when (> (LENGTH seq) 0)
        (FORMAT stream "~%")
 	 (DO ((place 0 (1+ place)))
@@ -56,14 +38,14 @@
 
 (DEFMETHOD vertex-x ((sequence list) position)
   (declare (type (integer 0 *) position))
-  (DECLARE (VALUES x))
+
     (IF (< position  (length-point-seq sequence))
 	(ELT sequence (* position 2))
 	(ELT sequence  (* 2 (1- (length-point-seq sequence))))))
 
 (DEFMETHOD vertex-x ((sequence array) position)
   (declare (type (integer 0 *) position))
-  (DECLARE (VALUES x))
+
     (IF (< position  (length-point-seq sequence))
 	(ELT sequence (* position 2))
 	(ELT sequence  (* 2 (1- (length-point-seq sequence))))))
@@ -72,7 +54,7 @@
   (declare (type (integer 0 *) i))
       (IF  (< i  (LENGTH-point-seq sequence))
 	   (SETF (elt sequence (* i 2)) x )
-	   (PROGN  
+	   (PROGN
 	     (VECTOR-PUSH-EXTEND x  sequence 5 )
 	     (VECTOR-PUSH-EXTEND 0 sequence 5 )
 	     x)))
@@ -87,13 +69,13 @@
 
 
 (DEFMETHOD vertex-y ((sequence list) position)
-  (DECLARE (VALUES local-y))
+
   (IF (< position  (length-point-seq sequence))
 	(ELT sequence (1+ (* position 2)))
 	(ELT sequence  (1+ (* 2 (1- (length-point-seq sequence)))))))
 
 (DEFMETHOD vertex-y ((sequence array) position)
-  (DECLARE (VALUES local-y))
+
   (IF (< position  (length-point-seq sequence))
 	(ELT sequence (1+ (* position 2)))
 	(ELT sequence  (1+ (* 2 (1- (length-point-seq sequence)))))))
@@ -102,7 +84,7 @@
   (declare (type (integer 0 *) i))
       (IF (< i  (LENGTH-point-seq sequence))
 	    (SETF (elt sequence (1+ (* i 2))) y )
-	    (PROGN  
+	    (PROGN
 	      (VECTOR-PUSH-EXTEND 0 sequence 5 )
 	      (VECTOR-PUSH-EXTEND y  sequence 5 )
 	      y)))
@@ -118,7 +100,7 @@
 (defmethod vertex-i ((sequence list) i)
   (declare (type (integer 0 *) i))
   (VALUES (vertex-x sequence i)(vertex-y sequence i)))
-  
+
 
 (Defmethod (SETF vertex-i) (point-seq (sequence list) i)
   (declare (type (integer 0 *) i))
@@ -141,7 +123,7 @@
 (defmethod vertex-i ((sequence array) i)
   (declare (type (integer 0 *) i))
   (VALUES (vertex-x sequence i)(vertex-y sequence i)))
-  
+
 
 (Defmethod (SETF vertex-i) (point-seq (sequence array) i)
   (declare (type (integer 0 *) i))
@@ -166,14 +148,14 @@
 
 (DEFMETHOD vertex-x ((sequence list) position)
   (declare (type (integer 0 *) position))
-  (DECLARE (VALUES x))
+
     (IF (< position  (length-point-seq sequence))
 	(ELT sequence (* position 2))
 	(ELT sequence  (* 2 (1- (length-point-seq sequence))))))
 
 (DEFMETHOD vertex-x ((sequence array) position)
   (declare (type (integer 0 *) position))
-  (DECLARE (VALUES x))
+
     (IF (< position  (length-point-seq sequence))
 	(ELT sequence (* position 2))
 	(ELT sequence  (* 2 (1- (length-point-seq sequence))))))
@@ -182,7 +164,7 @@
   (declare (type (integer 0 *) i))
       (IF  (< i  (LENGTH-point-seq sequence))
 	   (SETF (elt sequence (* i 2)) x )
-	   (PROGN  
+	   (PROGN
 	     (VECTOR-PUSH-EXTEND x  sequence 5 )
 	     (VECTOR-PUSH-EXTEND 0 sequence 5 )
 	     x)))
@@ -196,13 +178,13 @@
 	      x)))
 
 (DEFMETHOD vertex-y ((sequence list) position)
-  (DECLARE (VALUES local-y))
+
   (IF (< position  (length-point-seq sequence))
 	(ELT sequence (1+ (* position 2)))
 	(ELT sequence  (1+ (* 2 (1- (length-point-seq sequence)))))))
 
 (DEFMETHOD vertex-y ((sequence array) position)
-  (DECLARE (VALUES local-y))
+
   (IF (< position  (length-point-seq sequence))
 	(ELT sequence (1+ (* position 2)))
 	(ELT sequence  (1+ (* 2 (1- (length-point-seq sequence)))))))
@@ -211,7 +193,7 @@
   (declare (type (integer 0 *) i))
       (IF (< i  (LENGTH-point-seq sequence))
 	    (SETF (elt sequence (1+ (* i 2))) y )
-	    (PROGN  
+	    (PROGN
 	      (VECTOR-PUSH-EXTEND 0 sequence 5 )
 	      (VECTOR-PUSH-EXTEND y  sequence 5 )
 	      y)))
@@ -245,44 +227,44 @@
   "find the minimum value in a point sequence"
   (LET ((LENGTH (LENGTH point-seq)))
     (DO* ((index 1 (+ 2 index))
-	  (value (ELT point-seq 1) (MIN (ELT point-seq index) value)))  
+	  (value (ELT point-seq 1) (MIN (ELT point-seq index) value)))
 	 ((>= index (- length 1)) value))))
 
 (DEFUN point-seq-x-max (point-seq )
   "find the maximum value in a point sequence"
   (LET ((LENGTH (LENGTH point-seq)))
     (DO* ((index 0 (+ 2 index))
-	  (value (ELT point-seq 0) (MAX (ELT point-seq index) value)))  
+	  (value (ELT point-seq 0) (MAX (ELT point-seq index) value)))
 	 ((>= index (- length  2)) value))))
 
 (DEFUN point-seq-y-max (point-seq )
   "find the maximum value in a point sequence"
   (LET ((LENGTH (LENGTH point-seq)))
     (DO* ((index 1 (+ 2 index))
-	  (value (ELT point-seq 1) (MAX (ELT point-seq index) value)))  
+	  (value (ELT point-seq 1) (MAX (ELT point-seq index) value)))
 	 ((>= index (- length 1)) value))))
 
 
 (DEFUN find-point-seq-x (point-seq x &key (start 0) (end (1- (length-point-seq point-seq)) ))
   "Find the first occurance of X in the POINT-SEQ and return the POSITION
    START is the point-seq where the search starts, END is where point-seq where the search ends."
-  (DECLARE (VALUES (type integer position)))
+
   (LET ((start-seq (IF (>= start (length-point-seq point-seq))
 		    (- (* (length-point-seq point-seq) 2) 2)
-		    (* start 2))) 
+		    (* start 2)))
 	(end-seq (IF (>= end (length-point-seq point-seq))
 		    (- (* (length-point-seq point-seq) 2) 2)
 		    (* end 2))))
     (DO* ((index start-seq  (+ 2 index) )
 	  (POSITION  (IF (= x (ELT point-seq index)) (FLOOR (/ index 2)) nil)
-		     (IF (= x (ELT point-seq index)) (FLOOR (/ index 2)) position)))  
+		     (IF (= x (ELT point-seq index)) (FLOOR (/ index 2)) position)))
 	 ((OR position (>= index end-seq )) position))))
 
 
 
 (DEFUN find-point-seq-y (point-seq y &key (start 0) (end (1- (/ (length point-seq) 2))))
   "Find the first occurance of Y in the POINT-SEQ and return the POSITION"
-  (DECLARE (VALUES (type integer position)))
+
   (LET ((start-seq (IF (>= start (length-point-seq point-seq))
 		    (- (* (length-point-seq point-seq) 2) 2)
 		    (* start 2)))
@@ -291,7 +273,7 @@
 		    (+ (* end 2) 1))))
     (DO* ((index  (1+ start-seq) (+ 2 index) )
 	  (POSITION  (IF (= y (ELT point-seq index)) (FLOOR (/ index 2)) nil)
-		     (IF (= y (ELT point-seq index)) (FLOOR (/ index 2)) position)))  
+		     (IF (= y (ELT point-seq index)) (FLOOR (/ index 2)) position)))
 	 ((OR position (>= index end-seq )) position))))
 
 
@@ -299,15 +281,15 @@
   (DECLARE (type wcoord new-x))
   (DECLARE (type integer i))
     (IF (< i (length-point-seq array))  ;;subtract one because vectors have already been extended
-	(PROGN 
+	(PROGN
 	  (VECTOR-PUSH-EXTEND 0 array 5) ;push a point on the vector to make sure it is long enough for x
 	  (VECTOR-PUSH-EXTEND 0 array 5) ;push a point on the vector to make sure it is long enough for y
 	  (DO ((index (1- (LENGTH array)) (1- index))) ;count down to the position of insertion
 	      ((= (ROUND  index 2) i)
 	       (SETF (AREF array (* i 2)) new-x)
 	       (SETF (AREF array (+ (* i 2) 1)) new-y))
-	    (SETF (AREF array index) (AREF array (- index 2)))))	;store value in vector(x) into vector(x+1)	  
-	(PROGN 
+	    (SETF (AREF array index) (AREF array (- index 2)))))	;store value in vector(x) into vector(x+1)
+	(PROGN
 	  (VECTOR-PUSH-EXTEND new-x array 5)
 	  (VECTOR-PUSH-EXTEND new-y array 5) ))
     (values new-x new-y)
@@ -323,7 +305,7 @@
 	      ((= (ROUND  index 2) i)
 	       (SETF (ELT list (* i 2)) new-x)
 	       (SETF (ELT  list (+ (* i 2) 1)) new-y))
-	    (SETF (ELT list index) (ELT list (- index 2)))))	;store value in vector(x) into vector(x+1)	  
+	    (SETF (ELT list index) (ELT list (- index 2)))))	;store value in vector(x) into vector(x+1)
 	(nconc list (LIST new-x new-y)))
     (values new-x new-y)
     )
@@ -334,11 +316,11 @@
 (DEFMETHOD delete-vertex ( (array array) i)
   (DECLARE (type integer i))
   (LET ((point-seq-length (length-point-seq array)))
-    (WHEN (AND (< i  point-seq-length ) (NOT (= point-seq-length  0)))  
+    (WHEN (AND (< i  point-seq-length ) (NOT (= point-seq-length  0)))
       (MULTIPLE-VALUE-BIND (x y)  (vertex-i array i)
 	(DO ((index  (* 2 i)  (1+ index)))
 	    ((= index (- (LENGTH array) 2))
-	     (SETF (FILL-POINTER array) index))      ;move the fill pointer back one to shorten array	      
+	     (SETF (FILL-POINTER array) index))      ;move the fill pointer back one to shorten array
 	  (SETF (ELT  array index) (elt array (+ 2 index))))
 	(VALUES x y)))))
 
@@ -349,14 +331,14 @@
       (MULTIPLE-VALUE-BIND (x y)  (vertex-i list i)
 	    (DO ((index  (* 2 i)  (1+ index)))
 		((= index (- (LENGTH list) 2))
-		 (NBUTLAST list) (NBUTLAST list))	      
+		 (NBUTLAST list) (NBUTLAST list))
 	      (SETF (ELT  list index) (elt list (+ 2 index))))
       (VALUES x y)))))
 
 (DEFUN min-value-vector (cvector &optional (initial-index 0))
   "find the minimum value in a vector"
   (DO ((index (+ 2 initial-index) (+ 2 index))
-       (value (ELT  cvector initial-index) (MIN (ELT cvector index) value)))  
+       (value (ELT  cvector initial-index) (MIN (ELT cvector index) value)))
       ((>= index (LENGTH cvector)) value)
     )
   )
@@ -364,10 +346,7 @@
 (DEFUN max-value-vector (cvector &optional (initial-index 0))
   "find the minimum value in a vector"
   (DO ((index (+ 2 initial-index) (+ 2 index))
-       (value (ELT  cvector initial-index) (MAX (ELT cvector index) value)))  
+       (value (ELT  cvector initial-index) (MAX (ELT cvector index) value)))
       ((>= index (LENGTH cvector)) value)
     )
   )
-
-
-

@@ -27,38 +27,19 @@
 (defvar *extent-vector* (make-array '(8) :adjustable t :fill-pointer t))
 
 
-
-
-;;;  Extent-cache Mixin Definition:
-(EXPORT '(
-	  make-extent-rect
-	  extent-rect-xmin
-	  extent-rect-ymin
-	  extent-rect-xmax
-	  extent-rect-ymax
-	  extent
-	  extent-valid-p
-	  valid-extent-p
-	  extent-changed
-	  extent-copy
-	  extent-transform
-	  extent-move
-	  extent-combine
-	  ))
-
 (defclass extent-cache ()
   (
    (extent		:type extent-rect
                         :initform (make-extent-rect)
 			:accessor extent
 			:documentation "Defines the minimum containing rectangle in object coordinates of a graphic")
-   
+
    (extent-valid-p	:type boolean
                         :initform nil
 			:reader extent-valid-p
 			:documentation "Because of caching, is the extent valid?")
    )
-  
+
   (:documentation "Mixin for efficient handling of extents on a first in, first out presistent stack"))
 
 
@@ -81,14 +62,14 @@
 
 (defun extent-combine (extent-1 extent-2)
   (declare (type (or null extent-rect) extent-1 extent-2))
-  (declare (values (or null extent-rect)))
+
 
     (if (and extent-1 extent-2)	; Are they both there?
 	(IF (AND (extent-rect-xmin extent-2)(extent-rect-ymin extent-2) ;check for extent rectangle will nil values
 		 (extent-rect-xmin extent-1)(extent-rect-ymin extent-1)
 		 (extent-rect-xmax extent-2)(extent-rect-ymax extent-2)
 		 (extent-rect-xmax extent-1)(extent-rect-ymax extent-1))
-	    
+
 	    (psetf				; Yes, combine them
 	      (extent-rect-xmin extent-2) (min (extent-rect-xmin extent-2)
 					       (extent-rect-xmin extent-1))
@@ -136,7 +117,7 @@
 ;  extent (nil) then nil is returned and the cache remains invalid.
 
 (defmethod graphic-extent ((extent-cache extent-cache))
-  (declare (values (or null extent-rect)))
+
 
   (with-slots ((cache extent) extent-valid-p) extent-cache
     (if extent-valid-p				; Is the cache valid?
@@ -163,7 +144,7 @@
                             &optional (result (make-extent-rect)))
   (declare (type (or null transform) transform))
   (declare (type (or null extent-rect) extent-rect))
-  (declare (values (or null extent-rect)))
+
   (SETF (FILL-POINTER *extent-vector*) 8)
   (when extent-rect		; "Undefined" transformed is still "undefined"
     (if transform		; Is it the identity transform?
@@ -172,7 +153,7 @@
                  (aref *extent-vector* 2) (extent-rect-xmin extent-rect)	; all four corners
                  (aref *extent-vector* 4) (extent-rect-xmax extent-rect)
                  (aref *extent-vector* 6) (extent-rect-xmax extent-rect)
-                 
+
                  (aref *extent-vector* 1) (extent-rect-ymin extent-rect)
                  (aref *extent-vector* 3) (extent-rect-ymax extent-rect)
                  (aref *extent-vector* 5) (extent-rect-ymax extent-rect)
@@ -188,20 +169,11 @@
 
     result))						; Return new extent
 
-        
+
 
 (DEFUN extent-move (extent delta-x delta-y)
 
-  (SETF (extent-rect-xmin extent) (+ (extent-rect-xmin extent) delta-x)) 
+  (SETF (extent-rect-xmin extent) (+ (extent-rect-xmin extent) delta-x))
   (SETF (extent-rect-ymin extent) (+ (extent-rect-ymin extent) delta-y))
-  (SETF (extent-rect-xmax extent) (+ (extent-rect-xmax extent) delta-x)) 
+  (SETF (extent-rect-xmax extent) (+ (extent-rect-xmax extent) delta-x))
   (SETF (extent-rect-ymax extent) (+ (extent-rect-ymax extent) delta-y)))
-
-
-
-
-
-
-
-
-

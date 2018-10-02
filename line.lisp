@@ -19,17 +19,9 @@
 ;;; Authors: Delmar Hager, James Dutton, Teri Crowe
 ;;; Contributors: Kerry Kimbrough, Patrick Hogan, Eric Mielke
 
-(in-package "PICTURES")
+(in-package :pictures)
 
 
-(export '(
-	  line-start-point-x
-	  line-start-point-y
-	  line-end-point-x
-	  line-end-point-y
-	  make-line
-	  )
-	'pictures)
 
 ;Line Class Definition:
 
@@ -37,24 +29,24 @@
   (
    (start-x	:type		wcoord
                 :initarg	:start-x
-		:accessor       line-start-point-x 
+		:accessor       line-start-point-x
 		:documentation "object x-coordinate of start point for the line")
-   
+
    (start-y	:type		wcoord
                 :initarg	:start-y
-		:accessor       line-start-point-y 
+		:accessor       line-start-point-y
 		:documentation "object y-coordinate of start point for the line")
-   
+
    (end-x	:type		wcoord
                 :initarg	:end-x
-		:accessor       line-end-point-x 
+		:accessor       line-end-point-x
 		:documentation "object x-coordinate of end point for the line")
-   
+
    (end-y	:type		wcoord
                 :initarg	:end-y
-		:accessor       line-end-point-y 
+		:accessor       line-end-point-y
 		:documentation "object y-coordinate of end point for the line")
-   
+
    )
   (:documentation "A graphic that represents a line"))
 
@@ -67,7 +59,7 @@
                     &rest options
                     )
   (declare (type wcoord start-x start-y end-x end-y))
-  (declare (values line))
+
 
   (apply #'make-instance 'line
          :start-x start-x
@@ -81,7 +73,7 @@
 ;  Return the coordinates of the START-POINT of the given LINE.
 
 (defmethod line-start-point ((line line))
-  (declare (values start-x start-y))
+
 
   (with-slots (start-x start-y) line
     (values start-x start-y)))
@@ -109,7 +101,7 @@
 ;  Return the coordinates of the END-POINT of the given LINE.
 
 (defmethod line-end-point ((line line))
-  (declare (values end-x end-y))
+
 
   (with-slots (end-x end-y) line
     (values end-x end-y)))
@@ -135,7 +127,7 @@
   (declare (IGNORE  end-y))
 
   (extent-changed line))
-  
+
 
 ; Graphic methods for line graphics
 
@@ -147,7 +139,7 @@
 ;  before returning it.
 
 (defmethod extent-compute ((line line))
-  (declare (values (or null extent-rect)))
+
 
   (with-slots (start-x start-y end-x end-y transform) line
     (let (new-start-x new-start-y new-end-x new-end-y)
@@ -170,7 +162,7 @@
 (DEFMACRO line-visible-p (graphic)
   `(AND (NOT (AND (and min-x min-y width height)			; Was optional rect given
 			   (not (graphic-within-p ,graphic min-x min-y width height))
-			   (not (graphic-intersects-p ,graphic min-x min-y width height)))) 
+			   (not (graphic-intersects-p ,graphic min-x min-y width height))))
 	(PROGN
 	  (UNLESS (valid-extent-p (graphic-extent ,graphic)))
 	  (OR (>= (/ (- (extent-rect-xmax extent) (extent-rect-xmin extent))(view-scale view) ) (view-pixel-size view))
@@ -182,10 +174,10 @@
 	(viewable-p ,graphic)))
 
 (defmethod draw-graphic ((line line) (view view)
-                           &optional min-x min-y width height) 
+                           &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
   (with-slots (gstate start-x start-y end-x end-y extent) line
-     (WHEN   (line-visible-p line) 
+     (WHEN   (line-visible-p line)
       (MULTIPLE-VALUE-BIND (x y) (transform-point (graphic-world-transform line) start-x start-y)
 	(MULTIPLE-VALUE-BIND (x1 y1) (transform-point (graphic-world-transform line) end-x end-y)
 	  (view-draw-line view  x y x1 y1
@@ -209,7 +201,7 @@
 	(UNLESS (extent-valid-p graphic) (graphic-extent graphic))
 	(LET* ((xmin (extent-rect-xmin extent))
 	       (ymin (extent-rect-ymin extent)))
-	  
+
 	  (do ((g graphic (graphic-parent g)))
 	      ((null g))
 	    (dolist (view (graphic-views g))
@@ -235,9 +227,9 @@
   (DECLARE (IGNORE fixed-x fixed-y))
   (declare (type (or (satisfies plusp) (satisfies zerop)) scale-x scale-y))
   (declare (type ocoord fixed-x fixed-y))
-  (declare (values transform))
+
   (graphic-damage graphic)				; Damage from old graphic
-  
+
   (with-slots (transform start-x start-y end-x end-y) graphic
     (COND
       ((AND
@@ -276,12 +268,12 @@
 
 
 ;function for determining if a point is on a line
-;no consideration is given to make sure the point is within the endpoints, this check is done by the 
+;no consideration is given to make sure the point is within the endpoints, this check is done by the
 ;graphic in the method: graphic-contains-p
 
 (defun  point-on-line-p ( aperture x y x1 y1 x2 y2)
   (SETF aperture (* 2 aperture))
-  
+
       (COND
 	( (=  (FLOOR x1) (FLOOR x2)) (AND
 					     (<= (ABS (- x x1)) aperture)
@@ -295,9 +287,3 @@
 		  (ABS (+ (/ (* (- x2 x1)(- y y1)) (- y2 y1)) x1 (- x)))) aperture) )
 	)
       )
-
-
-
-
-
-

@@ -21,14 +21,6 @@
 
 (in-package "PICTURES")
 
-
-(export '(
-	  wcoord
-	  ocoord
-	  
-	  )
-	'pictures)
-
 (DEFTYPE wcoord  () 'float)
 
 (DEFTYPE ocoord () 'FLOAT)

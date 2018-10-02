@@ -19,33 +19,271 @@
 ;;; Authors: Delmar Hager, James Dutton, Teri Crowe
 ;;; Contributors: Kerry Kimbrough, Patrick Hogan, Eric Mielke
 
-(in-package "USER")
+(in-package :cl-user)
 
-(assert
-  (find-package "COMMON-LISP") ()
-  "COMMON-LISP package does not exist. 
-
- Please create a package named COMMON-LISP, nicknamed CL, which exports
-     LISP, CLOS and CONDITIONS external symbols.
-")
-
-(assert
-  (find-package "CLUE") ()
-  "CLUE must be loaded before making PICTURES")
-
-(unless (find-package "PICTURES")
-  (make-package "PICTURES" :use '(common-lisp clue) :nicknames '("PIC"))
-
-  #-(and clx-mit-r4 ansi-common-lisp)
-  ;; Crock! XLIB and COMMON-LISP both want to export define-condition!
-  ;; Shadow all XLIB externals already exported by COMMON-LISP.
-  (shadowing-import
-    (let (shadows)
-      (do-external-symbols (s :xlib shadows)
-	(multiple-value-bind (symbol status) (find-symbol (symbol-name s) :common-lisp)
-	  (when (and symbol (eq :external status))
-	    (push symbol shadows)))))
-    :pictures)
-
-  (use-package :xlib :pictures))
-
+(defpackage :pictures
+  (:use cl clue xlib)
+  (:nicknames :pic)
+  (:export add-event
+	   circle
+	   circle-center
+	   circle-center-x
+	   circle-center-y
+	   circle-radius
+	   clear-gstate
+	   compose-transform
+	   copy-transform
+	   default-family-name
+	   delete-event
+	   delete-vertex
+	   display
+	   draw-graphic
+	   draw-graphic-clipped
+	   edge-gstate
+	   editable-p
+	   ellipse-height
+	   ellipse-origin-x
+	   ellipse-origin-y
+	   ellipse-width
+	   extent
+	   extent-changed
+	   extent-combine
+	   extent-copy
+	   extent-move
+	   extent-rect-xmax
+	   extent-rect-xmin
+	   extent-rect-ymax
+	   extent-rect-ymin
+	   extent-transform
+	   extent-valid-p
+	   family-name
+	   filled-circle
+	   filled-circle-edge
+	   find-family-members
+	   find-font
+	   find-font-family
+	   find-point-seq-x
+	   find-point-seq-y
+	   graphic
+	   graphic-combined-gstate
+	   graphic-combined-world-extents
+	   graphic-contains-p
+	   graphic-damage
+	   graphic-events-enabled-p
+	   graphic-extent
+	   graphic-extent-height
+	   graphic-extent-height
+	   graphic-extent-width
+	   graphic-extent-width
+	   graphic-extent-x
+	   graphic-extent-y
+	   graphic-fixed-point
+	   graphic-gstate
+	   graphic-image-base-x
+	   graphic-image-base-y
+	   graphic-image-content
+	   graphic-image-gravity
+	   graphic-image-tile-p
+	   graphic-intersects-p
+	   graphic-parent
+	   graphic-pick
+	   graphic-plist
+	   graphic-reset
+	   graphic-sensitivity
+	   graphic-transform
+	   graphic-view
+	   graphic-views
+	   graphic-within
+	   graphic-within-p
+	   graphic-world-transform
+	   gravity-point
+	   grpahic-extent-x
+	   grpahic-extent-y
+	   gstate-arc-mode
+	   gstate-background
+	   gstate-cap-style
+	   gstate-combine
+	   gstate-copy
+	   gstate-dashes
+	   gstate-equal
+	   gstate-fill-rule
+	   gstate-fill-style
+	   gstate-foreground
+	   gstate-function
+	   gstate-join-style
+	   gstate-line-style
+	   gstate-line-width
+	   gstate-stipple
+	   gstate-tile
+	   gstate-value
+	   handle-event
+	   insert-vertex
+	   label
+	   label-angle
+	   label-base-x
+	   label-base-y
+	   label-extent-clip-p
+	   label-extent-height
+	   label-extent-width
+	   label-extent-x
+	   label-extent-y
+	   label-filled-background-p
+	   label-font
+	   label-font-family
+	   label-font-size
+	   label-gravity
+	   label-reverse-p
+	   label-string
+	   length-point-seq
+	   length-vertices
+	   line-end-point-x
+	   line-end-point-y
+	   line-start-point-x
+	   line-start-point-y
+	   make-bspline
+	   make-circle
+	   make-closed-bspline
+	   make-ellipse
+	   make-extent-rect
+	   make-filled-bspline
+	   make-filled-bspline-edge
+	   make-filled-circle
+	   make-filled-circle-edge
+	   make-filled-ellipse
+	   make-filled-ellipse-edge
+	   make-filled-polygon
+	   make-filled-polygon-edge
+	   make-filled-rectangle
+	   make-filled-rectangle-edge
+	   make-font-family
+	   make-graphic-image
+	   make-gstate
+	   make-label
+	   make-line
+	   make-polygon
+	   make-polyline
+	   make-polypoint
+	   make-rectangle
+	   make-scene
+	   make-selection-scene
+	   make-transform
+	   make-view
+	   max-x-vertex
+	   max-y-vertex
+	   min-x-vertex
+	   min-y-vertex
+	   move-transform
+	   move-transform
+	   normalize-graphic
+	   ocoord
+	   origin-x
+	   orinin-y
+	   pixelp
+	   point-seq-x-max
+	   point-seq-x-min
+	   point-seq-y-max
+	   point-seq-y-min
+	   print-seq
+	   radians
+	   rectangle-height
+	   rectangle-origin-x
+	   rectangle-origin-y
+	   rectangle-size
+	   rectangle-width
+	   refresh-view
+	   remove-gstate-value
+	   repair-graphic
+	   repair-view
+	   restore-graphic
+	   rotate-transform
+	   rotate-transform
+	   save-graphic
+	   scale-point
+	   scale-transform
+	   scale-transform
+	   scene
+	   scene-delete
+	   scene-elements
+	   scene-elements
+	   scene-graphic
+	   scene-insert
+	   scene-reparent
+	   scene-restack
+	   scene-ungroup
+	   selectable-p
+	   subselectable-p
+	   t11
+	   t12
+	   t21
+	   t22
+	   t31
+	   t32
+	   transform-point
+	   transform-point
+	   transform-point-seq
+	   transform-x
+	   transform-y
+	   untransform-point
+	   valid-extent-p
+	   valid-extent-p
+	   vertex-i
+	   vertex-x
+	   vertex-y
+	   vertices
+	   view
+	   view-add-selection
+	   view-clear-selection
+	   view-damage
+	   view-damaged-p
+	   view-draw-arc
+	   view-draw-char
+	   view-draw-filled-arc
+	   view-draw-filled-polygon
+	   view-draw-filled-rectangle
+	   view-draw-image
+	   view-draw-image-char
+	   view-draw-image-text
+	   view-draw-line
+	   view-draw-polygon
+	   view-draw-polyline
+	   view-draw-polypoint
+	   view-draw-rectangle
+	   view-draw-text
+	   view-graphic
+	   view-gravity
+	   view-highlight-color
+	   view-move-graphic
+	   view-orientation
+	   view-pan
+	   view-pan-down
+	   view-pan-left
+	   view-pan-right
+	   view-pan-up
+	   view-pixel-size
+	   view-remove-selection
+	   view-rotate-graphic
+	   view-scale
+	   view-scale-graphic
+	   view-scale-point
+	   view-scale-x
+	   view-scale-y
+	   view-select-graphic
+	   view-select-region
+	   view-selection
+	   view-show-region
+	   view-show-world
+	   view-transform-graphic
+	   view-transform-vector
+	   view-unselect-graphic
+	   view-unselect-region
+	   view-untransform-point
+	   view-untransform-x
+	   view-untransform-y
+	   view-x-pan
+	   view-y-pan
+	   view-zoom
+	   viewable-p
+	   wcoord
+	   world-extent
+	   world-extent
+	   world-extent))
