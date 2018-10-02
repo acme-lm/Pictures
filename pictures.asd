@@ -30,6 +30,7 @@
   :version "1.0.1"
   :components
   ((:file "package")
+   (:file "clx-bug-fixes")
    (:file "types" :depends-on ("package"))
    (:module caches
   	    :depends-on ("class-definitions")
@@ -57,7 +58,7 @@
    (:file "scene" :depends-on ("graphic"))
    (:file "view" :depends-on ("extent"))
    (:module view-methods
-  	    :depends-on ("view")
+  	    :depends-on ("view" "grabber")
   	    :pathname ""
   	    :components
   	    ((:file "view-select")
@@ -79,7 +80,7 @@
    (:file "gimage" :depends-on ("graphic"))
    (:file "gevents" :depends-on ("graphic"))
    (:file "grabber" :depends-on ("rectangle"))
-   (:file "zoom" :depends-on ("view-methods"))
+   (:file "view-zoom" :depends-on ("view-methods"))
    (:module save
   	    :depends-on ("caches")
   	    :pathname ""

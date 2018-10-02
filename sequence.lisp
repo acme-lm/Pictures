@@ -277,76 +277,74 @@
 	 ((OR position (>= index end-seq )) position))))
 
 
-(DEFMETHOD insert-vertex ((array array) new-x new-y  i)
-  (DECLARE (type wcoord new-x))
-  (DECLARE (type integer i))
-    (IF (< i (length-point-seq array))  ;;subtract one because vectors have already been extended
-	(PROGN
-	  (VECTOR-PUSH-EXTEND 0 array 5) ;push a point on the vector to make sure it is long enough for x
-	  (VECTOR-PUSH-EXTEND 0 array 5) ;push a point on the vector to make sure it is long enough for y
-	  (DO ((index (1- (LENGTH array)) (1- index))) ;count down to the position of insertion
-	      ((= (ROUND  index 2) i)
-	       (SETF (AREF array (* i 2)) new-x)
-	       (SETF (AREF array (+ (* i 2) 1)) new-y))
-	    (SETF (AREF array index) (AREF array (- index 2)))))	;store value in vector(x) into vector(x+1)
-	(PROGN
-	  (VECTOR-PUSH-EXTEND new-x array 5)
-	  (VECTOR-PUSH-EXTEND new-y array 5) ))
-    (values new-x new-y)
-    )
+(defmethod insert-vertex ((array array) new-x new-y  i)
+  ;; subtract one because vectors have already been extended
+  (if (< i (length-point-seq array))
+      (progn
+	;; push a point on the vector to make sure it is long enough for x
+	(vector-push-extend 0 array 5)
+	;; push a point on the vector to make sure it is long enough for y
+	(vector-push-extend 0 array 5)
+	;; count down to the position of insertion
+	(do ((index (1- (length array)) (1- index)))
+	    ((= (round  index 2) i)
+	     (setf (aref array (* i 2)) new-x)
+	     (setf (aref array (+ (* i 2) 1)) new-y))
+	  ;; store value in vector(x) into vector(x+1)
+	  (setf (aref array index) (aref array (- index 2)))))
+      (progn
+	(vector-push-extend new-x array 5)
+	(vector-push-extend new-y array 5) ))
+  (values new-x new-y))
 
-(DEFMETHOD insert-vertex ((list list ) new-x new-y  i)
-  (DECLARE (type wcoord new-x new-y))
-  (DECLARE (type integer i))
-    (IF (< i (length-point-seq list))  ;;subtract one because vectors have already been extended
-	(PROGN
-	  (nconc list (LIST 0 0))
-	  (DO ((index (1- (LENGTH list)) (1- index))) ;count down to the position of insertion
-	      ((= (ROUND  index 2) i)
-	       (SETF (ELT list (* i 2)) new-x)
-	       (SETF (ELT  list (+ (* i 2) 1)) new-y))
-	    (SETF (ELT list index) (ELT list (- index 2)))))	;store value in vector(x) into vector(x+1)
-	(nconc list (LIST new-x new-y)))
-    (values new-x new-y)
-    )
+(defmethod insert-vertex ((list list ) new-x new-y  i)
+  (declare (type wcoord new-x new-y))
+  (declare (type integer i))
+    (if (< i (length-point-seq list))  ;;subtract one because vectors have already been extended
+	(progn
+	  (nconc list (list 0 0))
+	  (do ((index (1- (length list)) (1- index))) ;count down to the position of insertion
+	      ((= (round  index 2) i)
+	       (setf (elt list (* i 2)) new-x)
+	       (setf (elt  list (+ (* i 2) 1)) new-y))
+	    (setf (elt list index) (elt list (- index 2)))))	;store value in vector(x) into vector(x+1)
+	(nconc list (list new-x new-y)))
+    (values new-x new-y))
 
+(defmethod delete-vertex ( (array array) i)
+  (declare (type integer i))
+  (let ((point-seq-length (length-point-seq array)))
+    (when (and (< i  point-seq-length ) (not (= point-seq-length  0)))
+      (multiple-value-bind (x y)  (vertex-i array i)
+	(do ((index  (* 2 i)  (1+ index)))
+	    ((= index (- (length array) 2))
+	     (setf (fill-pointer array) index))      ;move the fill pointer back one to shorten array
+	  (setf (elt  array index) (elt array (+ 2 index))))
+	(values x y)))))
 
+(defmethod delete-vertex ( (list list) i)
+  (declare (type integer i))
+  (let ((point-seq-length (length-point-seq list)))
+    (when (and (< i  point-seq-length ) (not (= point-seq-length  0)))
+      (multiple-value-bind (x y)  (vertex-i list i)
+	    (do ((index  (* 2 i)  (1+ index)))
+		((= index (- (length list) 2))
+		 (nbutlast list) (nbutlast list))
+	      (setf (elt  list index) (elt list (+ 2 index))))
+      (values x y)))))
 
-
-(DEFMETHOD delete-vertex ( (array array) i)
-  (DECLARE (type integer i))
-  (LET ((point-seq-length (length-point-seq array)))
-    (WHEN (AND (< i  point-seq-length ) (NOT (= point-seq-length  0)))
-      (MULTIPLE-VALUE-BIND (x y)  (vertex-i array i)
-	(DO ((index  (* 2 i)  (1+ index)))
-	    ((= index (- (LENGTH array) 2))
-	     (SETF (FILL-POINTER array) index))      ;move the fill pointer back one to shorten array
-	  (SETF (ELT  array index) (elt array (+ 2 index))))
-	(VALUES x y)))))
-
-(DEFMETHOD delete-vertex ( (list list) i)
-  (DECLARE (type integer i))
-  (LET ((point-seq-length (length-point-seq list)))
-    (WHEN (AND (< i  point-seq-length ) (NOT (= point-seq-length  0)))
-      (MULTIPLE-VALUE-BIND (x y)  (vertex-i list i)
-	    (DO ((index  (* 2 i)  (1+ index)))
-		((= index (- (LENGTH list) 2))
-		 (NBUTLAST list) (NBUTLAST list))
-	      (SETF (ELT  list index) (elt list (+ 2 index))))
-      (VALUES x y)))))
-
-(DEFUN min-value-vector (cvector &optional (initial-index 0))
+(defun min-value-vector (cvector &optional (initial-index 0))
   "find the minimum value in a vector"
-  (DO ((index (+ 2 initial-index) (+ 2 index))
-       (value (ELT  cvector initial-index) (MIN (ELT cvector index) value)))
-      ((>= index (LENGTH cvector)) value)
+  (do ((index (+ 2 initial-index) (+ 2 index))
+       (value (elt  cvector initial-index) (min (elt cvector index) value)))
+      ((>= index (length cvector)) value)
     )
   )
 
-(DEFUN max-value-vector (cvector &optional (initial-index 0))
+(defun max-value-vector (cvector &optional (initial-index 0))
   "find the minimum value in a vector"
-  (DO ((index (+ 2 initial-index) (+ 2 index))
-       (value (ELT  cvector initial-index) (MAX (ELT cvector index) value)))
-      ((>= index (LENGTH cvector)) value)
+  (do ((index (+ 2 initial-index) (+ 2 index))
+       (value (elt  cvector initial-index) (max (elt cvector index) value)))
+      ((>= index (length cvector)) value)
     )
   )

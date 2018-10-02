@@ -249,7 +249,8 @@
      (CADR (SETF (gstate-value gstate :foreground) foreground)))
     ((pixelp (SYMBOL-VALUE  foreground))
      (CADR (SETF (gstate-value gstate :foreground) foreground)))
-    (t (ERROR "The value ~a for foreground is not of type PIXEL"))))
+    (t
+     (ERROR "The value ~a for foreground is not of type PIXEL" foreground))))
 
 (DEFMETHOD (SETF gstate-foreground) (foreground (graphic graphic))
   (COND
@@ -260,7 +261,8 @@
      (CADR (SETF (gstate-value (graphic-gstate graphic) :foreground) foreground)))
     ((pixelp (SYMBOL-VALUE  foreground))
      (CADR (SETF (gstate-value (graphic-gstate graphic) :foreground) foreground)))
-   (t (ERROR "The value ~a for foreground is not of type PIXEL"))))
+    (t
+     (ERROR "The value ~a for foreground is not of type PIXEL" foreground))))
 
 (DEFMETHOD gstate-background ((gstate gstate))
   (CADR (gstate-value gstate :background)))
@@ -277,7 +279,8 @@
      (CADR (SETF (gstate-value gstate :background) background)))
     ((pixelp (SYMBOL-VALUE  background))
      (CADR (SETF (gstate-value gstate :background) background)))
-   (t (ERROR "The value ~a for background is not of type PIXEL"))))
+    (t
+     (ERROR "The value ~a for background is not of type PIXEL" background))))
 
 (DEFMETHOD (SETF gstate-background) :before (background (graphic graphic))
   (DECLARE (IGNORE background))
@@ -293,8 +296,8 @@
      (CADR (SETF (gstate-value (graphic-gstate graphic) :background) background)))
     ((pixelp (SYMBOL-VALUE  background))
      (CADR (SETF (gstate-value (graphic-gstate graphic) :background) background)))
-   (t (ERROR "The value ~a for background is not of type PIXEL")))
-  )
+    (t
+     (ERROR "The value ~a for background is not of type PIXEL" background))))
 
 (DEFMETHOD gstate-dashes ((gstate gstate))
   (gstate-value gstate :dashes))

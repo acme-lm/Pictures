@@ -116,7 +116,7 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
        (SETF (vertex-y ,b-spline pos) first-y))
      (SETF (vertex-i ,b-spline 2) ,vertices)
      (DOTIMES (pos 2)
-       (SETF (vertex-x ,b-spline (+ *large-number* pos)) last-x))
+       (SETF (vertex-x ,b-spline (+ +large-number+ pos)) last-x))
      (LET ((length-spline (length-point-seq ,b-spline)))
        (DOTIMES (pos 2)
 	 (SETF (vertex-y ,b-spline (-  length-spline pos 1)) last-y)))))
@@ -163,8 +163,8 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
     (WHEN (visible-p bspline)
     (with-vector spline
 	(WHEN  (> (LENGTH vertices) 0)
-	  (LET ((last-x  (vertex-x vertices *large-number* ))
-		(last-y  (vertex-y vertices *large-number* ))
+	  (LET ((last-x  (vertex-x vertices +large-number+ ))
+		(last-y  (vertex-y vertices +large-number+ ))
 		(first-x (vertex-x vertices 0))
 		(first-y (vertex-y vertices 0)))
 	    (compose-spline spline vertices)
@@ -186,8 +186,8 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
     (WHEN (visible-p bspline)
       (with-vector spline
 	(WHEN  (> (LENGTH vertices) 0)
-	  (LET ((last-x  (vertex-x vertices *large-number* ))
-		(last-y  (vertex-y vertices *large-number* ))
+	  (LET ((last-x  (vertex-x vertices +large-number+ ))
+		(last-y  (vertex-y vertices +large-number+ ))
 		(first-x (vertex-x vertices 0))
 		(first-y (vertex-y vertices 0)))
 	    (compose-spline spline vertices)
@@ -212,8 +212,8 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
     (WHEN (visible-p bspline)
       (with-vector spline
 	(WHEN  (> (LENGTH vertices) 0)
-	  (LET ((last-x  (vertex-x vertices *large-number* ))
-		(last-y  (vertex-y vertices *large-number* ))
+	  (LET ((last-x  (vertex-x vertices +large-number+ ))
+		(last-y  (vertex-y vertices +large-number+ ))
 		(first-x (vertex-x vertices 0))
 		(first-y (vertex-y vertices 0)))
 	    (compose-spline spline vertices)
@@ -237,8 +237,8 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
     (WHEN (visible-p bspline)
       (with-vector spline
 	(WHEN  (> (LENGTH vertices) 0)
-	  (LET ((last-x  (vertex-x vertices *large-number* ))
-		(last-y  (vertex-y vertices *large-number* ))
+	  (LET ((last-x  (vertex-x vertices +large-number+ ))
+		(last-y  (vertex-y vertices +large-number+ ))
 		(first-x (vertex-x vertices 0))
 		(first-y (vertex-y vertices 0)))
 	    (compose-spline spline vertices)
@@ -263,8 +263,8 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
    (with-vector spline
      (with-slots (vertices gstate) bspline
        (WHEN  (> (LENGTH vertices) 0)
-	 (LET ((last-x  (vertex-x vertices *large-number* ))
-	       (last-y  (vertex-y vertices *large-number* ))
+	 (LET ((last-x  (vertex-x vertices +large-number+ ))
+	       (last-y  (vertex-y vertices +large-number+ ))
 	       (first-x (vertex-x vertices 0))
 	       (first-y (vertex-y vertices 0)))
 	   (compose-spline spline vertices)
@@ -289,8 +289,8 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
      (with-vector spline
 	(with-slots (vertices gstate) bspline
 	  (WHEN  (> (LENGTH vertices) 0)
-	    (LET ((last-x  (vertex-x vertices *large-number* ))
-		  (last-y  (vertex-y vertices *large-number* ))
+	    (LET ((last-x  (vertex-x vertices +large-number+ ))
+		  (last-y  (vertex-y vertices +large-number+ ))
 		  (first-x (vertex-x vertices 0))
 		  (first-y (vertex-y vertices 0)))
 	      (compose-spline spline vertices)
@@ -309,7 +309,7 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
 		  (with-vector temp-vector
 		    (VECTOR-PUSH-EXTEND first-x temp-vector)
 		    (VECTOR-PUSH-EXTEND first-y temp-vector)
-		    (SETF (vertex-i spline-points *large-number*) temp-vector))
+		    (SETF (vertex-i spline-points +large-number+) temp-vector))
 		  (point-near-line spline-points line-width x y)
 		  ))))))))
 
@@ -359,8 +359,8 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
    (with-vector spline
      (with-slots (vertices gstate) bspline
        (WHEN  (> (LENGTH vertices) 0)
-	 (LET ((last-x  (vertex-x vertices *large-number* ))
-	       (last-y  (vertex-y vertices *large-number* ))
+	 (LET ((last-x  (vertex-x vertices +large-number+ ))
+	       (last-y  (vertex-y vertices +large-number+ ))
 	       (first-x (vertex-x vertices 0))
 	       (first-y (vertex-y vertices 0)))
 	   (compose-spline spline vertices)
@@ -385,8 +385,8 @@ iteration of the polynomial evaluation. DT2 and DT3 are DT squared and cubed, re
    (with-vector spline
      (with-slots (vertices gstate) bspline
        (WHEN  (> (LENGTH vertices) 0)
-	 (LET ((last-x  (vertex-x vertices *large-number* ))
-	       (last-y  (vertex-y vertices *large-number* ))
+	 (LET ((last-x  (vertex-x vertices +large-number+ ))
+	       (last-y  (vertex-y vertices +large-number+ ))
 	       (first-x (vertex-x vertices 0))
 	       (first-y (vertex-y vertices 0))
 	       (line-width (OR (AND

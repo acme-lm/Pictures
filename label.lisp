@@ -22,7 +22,7 @@
 (in-package "PICTURES")
 
 
-(DEFCONSTANT  minimum-pixel-size-to-display 4.0)
+(DEFCONSTANT  *minimum-pixel-size-to-display* 4.0)
 
 (DEFMACRO change-font-if-scale-values-not-equal ( label label-view-scale view)
   `(UNLESS (= ,label-view-scale (view-scale ,view))

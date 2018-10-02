@@ -348,8 +348,6 @@
 
 
 (defmethod (setf graphic-parent) (new-parent (graphic graphic))
-  (declare (type (or null graphic) new-parent))
-
   (with-slots (parent) graphic
     (when parent
       (extent-changed parent)
@@ -480,10 +478,6 @@
 
 (defmethod rotate-transform ((graphic graphic) angle
                              &optional (fixed-x 0) (fixed-y 0))
-  (declare (type angle angle))
-  (declare (type wcoord fixed-x fixed-y))
-
-
   (with-slots (transform) graphic
     (graphic-damage graphic)				; Damage from old graphic
     (when (null transform)				; If no transform
@@ -503,9 +497,6 @@
 
 (defmethod scale-transform ((graphic graphic) scale-x scale-y
                             &optional (fixed-x 0) (fixed-y 0))
-  (declare (type (or (satisfies plusp) (satisfies zerop)) scale-x scale-y))
-  (declare (type ocoord fixed-x fixed-y))
-
   (graphic-damage graphic)				; Damage from old graphic
   (with-slots (transform) graphic
     (when (null transform)				; If no transform

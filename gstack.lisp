@@ -30,41 +30,29 @@
 (defparameter *graphic-stack-increment* 5
   "Number of elements to add when expanding the graphic stack")
 
-
 ;;; Graphic-stack Class Definition:
 (defclass graphic-stack ()
-  (
-   (stack	:type		vector
-                :initform	(make-array (list *graphic-stack-initial-size*)
-                                            :adjustable	  t
-                                            :fill-pointer 0)
-                :documentation	"Dynamically expandable stack of (graphic . object) pairs")))
+  ((stack :type vector
+	  :initform (make-array (list *graphic-stack-initial-size*)
+				:adjustable t
+				:initial-element nil
+				:fill-pointer 0)
+	  :documentation "Dynamically expandable stack of (graphic . object) pairs")))
+
+;; Constants These should not be modified!!
+(DEFPARAMETER *identity-transform* (make-transform))
+(DEFPARAMETER *empty-gstate* (make-gstate))
 
 
-;Constants
-;  These should not be modified!!
-(DEFPARAMETER  *identity-transform* (make-transform))
-(DEFPARAMETER  *empty-gstate* (make-gstate))
 
-
-;Function: graphic-stack-empty-p
-;  Determine if the given GRAPHIC-STACK is empty.
-
-(proclaim '(inline graphic-stack-empty-p))
+;; Determine if the given GRAPHIC-STACK is empty.
 (defun graphic-stack-empty-p (graphic-stack)
-
-
   (zerop (fill-pointer (slot-value graphic-stack 'stack))))
 
-
-;Method: graphic-stack-fill
-;  Empty the given GRAPHIC-STACK and then re-fill it by pushing each of GRAPHIC's
-;  ancestors onto the stack in order beginning with the root ancestor and ending
-;  with GRAPHIC itself.
-
+;;  empty the given graphic-stack and then re-fill it by pushing each of graphic's
+;;  ancestors onto the stack in order beginning with the root ancestor and ending
+;;  with graphic itself.
 (defmethod graphic-stack-fill ((graphic-stack graphic-stack) graphic)
-
-
   (graphic-stack-purge graphic-stack)				; Empty the stack
   (when graphic							; Nil graphic means end of recursion
     (graphic-stack-fill graphic-stack (graphic-parent graphic)) ; Recurse on graphic's parent
@@ -128,32 +116,32 @@
                                graphic))))
 
 
-;Method: graphic-stack-push
-;  Push the given GRAPHIC onto the given GRAPHIC-STACK.  The second element of the
-;  pair is initially unmodified.  Expand the stack if needed (in which case the second element
-;  is initially nil).  Return the newly pushed pair.
-
+;; Push the given graphic onto the given graphic-stack. The second
+;; element of the pair is initially unmodified. Expand the stack if
+;; needed (in which case the second element is initially nil). Return
+;; the newly pushed pair.
 (defmethod graphic-stack-push ((graphic-stack graphic-stack) graphic)
-
-
   (with-slots (stack) graphic-stack
-    (let* ((stack-pointer (fill-pointer stack))			; Locals for stack pointer
-	   (current-size  (array-total-size stack))	    	; and current array size
-           (top-entry     (AREF  stack stack-pointer)))		; and entry at top of stack
-
-      (when (eql stack-pointer current-size)    		; If stack will be full,
+    ;; Locals for stack pointer
+    (let* ((stack-pointer (fill-pointer stack))
+	   (current-size (array-total-size stack))
+           (top-entry (aref stack stack-pointer)))
+      ;; if stack will be full ( --EED: why not use a push extend operation?)
+      (when (eql stack-pointer current-size)
         (adjust-array
-          stack
-          (list (+ current-size *graphic-stack-increment*))))   ; Expand it first.
-      (if (null top-entry)    					; Is entry already there?
-          (vector-push (cons (cons graphic nil) nil) stack)        	; No, just push one
-          (progn (setf (caar top-entry) graphic)			; Yes, change the graphic part
-                 (if (cdar top-entry)					; Is the "object" there?
-                     (setf (cdr top-entry) (cdar top-entry))		  ; Yes, save it away
-                     (setf (cdar top-entry) (cdr top-entry)))		  ; No, use saved object
-                 (incf (fill-pointer stack))))  		; Increment stack pointer.
-
-      (car (AREF stack stack-pointer)))))    		; Return the pair we just pushed
+	 stack
+	    ;; expand it first.
+	 (list (+ current-size *graphic-stack-increment*))))
+      ;; Is entry already there?
+      (if (null top-entry)
+	  ;; no, just push one
+          (vector-push (cons (cons graphic nil) nil) stack)
+          (progn (setf (caar top-entry) graphic)			; yes, change the graphic part
+                 (if (cdar top-entry)					; is the "object" there?
+                     (setf (cdr top-entry) (cdar top-entry))		  ; yes, save it away
+                     (setf (cdar top-entry) (cdr top-entry)))		  ; no, use saved object
+                 (incf (fill-pointer stack))))  		; increment stack pointer.
+      (car (aref stack stack-pointer)))))    		; return the pair we just pushed
 
 
 ;Function: graphic-stack-top

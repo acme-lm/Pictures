@@ -47,41 +47,27 @@
 (defun make-rectangle (x-min y-min width height  &rest options )
   "Make a rectangle with the with the given X-MIN, Y-MIN, WIDTH and HEIGHT.
 The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
-
-
   (APPLY #'MAKE-INSTANCE 'rectangle
 	 :point-seq (complete-rectangle x-min y-min (+ x-min width) (+ y-min height))
 	 options))
 
-
 (defun make-filled-rectangle (x-min y-min width height  &rest options )
   "Make a filled-rectangle with with the given X-MIN, Y-MIN, WIDTH and HEIGHT.
 The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
-
-
   (APPLY #'MAKE-INSTANCE 'filled-rectangle
 	 :point-seq (complete-rectangle x-min y-min (+ x-min width) (+ y-min height))
 	 options))
 
-
 (defun make-filled-rectangle-edge (x-min y-min width height  &rest options )
   "Make a filled-rectangle-edge with the given X-MIN, Y-MIN, WIDTH and HEIGHT.
 The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST EDGE-GSTATE"
-
-
   (APPLY #'MAKE-INSTANCE 'filled-rectangle-edge
 	 :point-seq (complete-rectangle x-min y-min (+ x-min width) (+ y-min height))
 	 options))
 
-
-
-
 ; Graphic methods for rectangle graphics
-
 (DEFMETHOD rectangle-origin-x ((rectangle rectangle))
-
-  (vertex-x rectangle 0)
-  )
+  (vertex-x rectangle 0))
 
 (DEFMETHOD (SETF rectangle-origin-x) (origin-x (rectangle rectangle) )
   (LET ((difference (- origin-x (vertex-x rectangle 0))))
@@ -90,7 +76,6 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
       (SETF (vertex-x rectangle pos) (+ difference (vertex-x rectangle pos)) ))))
 
 (DEFMETHOD rectangle-origin-y ((rectangle rectangle))
-
   (vertex-y rectangle 0))
 
 (DEFMETHOD (SETF rectangle-origin-y) (origin-y (rectangle rectangle) )
@@ -118,8 +103,10 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 (DEFMETHOD rectangle-height ((rectangle rectangle))
   (with-slots (vertices ) rectangle
     (VALUES (distance
-	      (vertex-x rectangle 0) (vertex-y rectangle 0) (vertex-x rectangle 3) (vertex-y rectangle 3)))))
-
+	     (vertex-x rectangle 0)
+	     (vertex-y rectangle 0)
+	     (vertex-x rectangle 3)
+	     (vertex-y rectangle 3)))))
 
 (DEFMETHOD (SETF rectangle-height) (height (rectangle rectangle))
   (with-slots (vertices ) rectangle
@@ -132,17 +119,18 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
       (SETF (vertex-y rectangle 2) (+ (vertex-y rectangle 2) dy)))
     rectangle))
 
-
-
 (DEFMETHOD rectangle-size ((rectangle rectangle))
-
   (VALUES
     (distance
-	      (vertex-x rectangle 0) (vertex-y rectangle 0) (vertex-x rectangle 1) (vertex-y rectangle 1))
+     (vertex-x rectangle 0)
+     (vertex-y rectangle 0)
+     (vertex-x rectangle 1)
+     (vertex-y rectangle 1))
     (distance
-      (vertex-x rectangle 0) (vertex-y rectangle 0) (vertex-x rectangle 3) (vertex-y rectangle 3))
-    ))
-
+     (vertex-x rectangle 0)
+     (vertex-y rectangle 0)
+     (vertex-x rectangle 3)
+     (vertex-y rectangle 3))))
 
 (DEFMETHOD normalize-graphic  :around ((rectangle rectangle))
   (with-slots (vertices transform) rectangle
@@ -153,8 +141,6 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 	(SETF transform nil))
       )
     transform))
-
-
 
 (DEFUN compute-point (x1 y1 x2 y2 distance)
   (LET* (x y)
@@ -169,14 +155,9 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
   "the distance between two points"
       (SQRT (+ (* (- x1 x2)(- x1 x2))(* (- y1 y2)(- y1 y2)))))
 
-;Method: draw-graphic
-
-
-
-;  Draw the RECTANGLE object in the given VIEW. If MIN-X, MIN-Y, WIDTH, and HEIGHT
-;  are given, then only parts of the object that lie within the given rectangle
-;  need to be drawn.
-
+;; Draw the rectangle object in the given view. if min-x, min-y,
+;; width, and height are given, then only parts of the object that lie
+;; within the given rectangle need to be drawn.
 (defmethod draw-graphic ((rectangle rectangle) (view view)
 			 &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
@@ -200,11 +181,9 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 	  ))
       rectangle)))
 
-;Method: draw-graphic
-;  Draw the FILLED-RECTANGLE object in the given VIEW. If MIN-X, MIN-Y, WIDTH, and HEIGHT
-;  are given, then only parts of the object that lie within the given rectangle
-;  need to be drawn.
-
+;; Draw the filled-rectangle object in the given view. if min-x,
+;; min-y, width, and height are given, then only parts of the object
+;; that lie within the given rectangle need to be drawn.
 (defmethod draw-graphic ((rectangle filled-rectangle) (view view)
 			 &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
@@ -221,19 +200,14 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 					  (- (max-value-vector temp-vertices 0)(min-value-vector temp-vertices 0))
 					  (- (max-value-vector temp-vertices 1)(min-value-vector temp-vertices 1))
 					  (graphic-gstate rectangle))
-
 	      (view-draw-filled-polygon view	; No, use draw-polygon to draw it
 					temp-vertices
-					(graphic-gstate rectangle)))
-	  )))
-    ))
+					(graphic-gstate rectangle))))))))
 
-
-;Method: draw-graphic
-;  Draw the FILLED-RECTANGLE-EDGE object by first drawing the interior and then
-;  boundary.  If MIN-X, MIN-Y, WIDTH, and HEIGHT are given, then only parts of
-;  the object that lie within the given rectangle need to be drawn.
-
+;; Draw the FILLED-RECTANGLE-EDGE object by first drawing the interior
+;; and then boundary. If MIN-X, MIN-Y, WIDTH, and HEIGHT are given,
+;; then only parts of the object that lie within the given rectangle
+;; need to be drawn.
 (defmethod draw-graphic ((rectangle filled-rectangle-edge) (view view)
 			 &optional min-x min-y width height)
   (declare (type (or null wcoord) min-x min-y width height))
@@ -262,7 +236,6 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 		    (- (max-value-vector temp-vertices 0)(min-value-vector temp-vertices 0))
 		    (- (max-value-vector temp-vertices 1)(min-value-vector temp-vertices 1))
 		    (edge-gstate rectangle)))
-
 		(PROGN
 		  (view-draw-filled-polygon view	; No, use draw-fillpolygon to draw the interior
 					    temp-vertices
@@ -271,19 +244,10 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 				     temp-vertices
 				     (edge-gstate rectangle))))))))))
 
-
-
-
-
-
 (defmethod scale-transform ((graphic rectangle) scale-x scale-y
                             &optional (fixed-x 0) (fixed-y 0))
-  (declare (type (or (satisfies plusp) (satisfies zerop)) scale-x scale-y))
-  (declare (type ocoord fixed-x fixed-y))
-
-  (graphic-damage graphic)				; Damage from old graphic
-
-
+  ;; Damage from old graphic
+  (graphic-damage graphic)
   (with-slots (transform) graphic
     (UNLESS (AND transform (= (t12 transform)(t21 transform) 0))
       (COND
@@ -301,23 +265,19 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
     (graphic-damage graphic)				; Damage from new graphic
     transform))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;Private Method: complete-rectangle
-;  Compute and return the world coordinates of all four vertices of the given RECTANGLE.
-;  Also returns the X and Y lengths of the diagonal.
-
+;; Private Method: complete-rectangle
+;;  Compute and return the world coordinates of all four vertices of the given RECTANGLE.
+;;  Also returns the X and Y lengths of the diagonal.
 (defun complete-rectangle (x1 y1 x3 y3 &aux x2 y2 x4 y4)
   (PSETF  x2 x3
 	  y2 y1
 	  y4 y3
 	  x4 x1)
-  (VALUES (vector x1 y1 x2 y2 x3 y3 x4 y4))
-  )			; X and Y lengths of the diagonal
-
+  ;; X and Y lengths of the diagonal
+  (VALUES (vector x1 y1 x2 y2 x3 y3 x4 y4)))
 
 ;; private method to determine if a rectangle is ortagonal
-
 (DEFMETHOD orthogonal ((rectangle rectangle) (view view))
   (with-slots (vertices) rectangle
     (LET  ((x1 (VERTEX-X RECTANGLE 0) )
@@ -325,20 +285,14 @@ The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM 
 	   (x3 (vertex-x rectangle 2))
 	   (y3 (vertex-y rectangle 2))
 	   (epsilon	(view-pixel-size view)))	; World size of one pixel in this view
-
       (if (or (<= (abs (- x1 x3)) epsilon)	; Is rectangle orthogonal?
 	      (<= (abs (- y1 y3)) epsilon))
 	  t
 	  nil))))
 
 
-
-
-
-
 (DEFUN point-in-rectangle  (x y xmin ymin height width )
   "this function determines if a given point is within the extent bound of a graphic"
-
     (And (>= x xmin )
 	       (<= x (+ xmin height))
 	       (>= y ymin)

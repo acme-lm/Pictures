@@ -115,7 +115,7 @@
 	  (SETF (gcontext-line-width new-gcontext) (floor (* (ELT ga line-width) (view-scale view)))))
 	(IF (elt ga clip-mask )
 		  (SETF (gcontext-clip-mask new-gcontext) (elt ga  clip-mask))
-		  
+
 		(SETF (gcontext-clip-mask new-gcontext) :none))
 	    (WHEN (OR (elt ga stipple )(elt ga tile )(elt ga stipple-pix ))
 	      (when (elt ga ts-x )  (SETF (gcontext-ts-x new-gcontext)  (elt ga  ts-x)))
@@ -126,7 +126,7 @@
 	    (prepare-gcontext view gstate new-gcontext)
 	    (VECTOR-PUSH-EXTEND (LIST (gstate-copy gstate (make-gstate)) new-gcontext) (view-gcontext-cache view) )
 	    )
-	  
+
 	  )
       new-gcontext
       )))
@@ -176,7 +176,7 @@
 (defmethod view-draw-polypoint ((view view)  point-sequence
 					&optional gstate)
   (declare (type vector point-sequence))
-  (with-vector  point-list 
+  (with-vector  point-list
     (DOTIMES (i (LENGTH point-sequence))
       (VECTOR-PUSH-EXTEND  (AREF point-sequence i) point-list))
     (draw-points view (if gstate (working-gcontext view gstate) (slot-value view 'default-gcontext))
@@ -188,7 +188,7 @@
 (defmethod view-draw-polyline ((view view)  point-sequence
 				       &optional gstate)
   (declare (type vector point-sequence))
-  (with-vector  point-list 
+  (with-vector  point-list
     (DOTIMES (i (LENGTH point-sequence) )
       (VECTOR-PUSH-EXTEND  (AREF point-sequence i) point-list))
     (draw-lines view (if gstate (working-gcontext view gstate) (slot-value view 'default-gcontext))
@@ -199,9 +199,9 @@
 (defmethod view-draw-polygon ((view view) point-sequence
 				       &optional  gstate)
   (declare (type vector point-sequence))
-  (with-vector  point-list 
+  (with-vector  point-list
     (copy-to-vector point-sequence point-list)
-    (insert-vertex point-list (vertex-x point-sequence 0) (vertex-y point-sequence 0) *large-number*)
+    (insert-vertex point-list (vertex-x point-sequence 0) (vertex-y point-sequence 0) +large-number+)
     (draw-lines view (if gstate (working-gcontext view gstate) (slot-value view 'default-gcontext))
                       (view-transform-vector view point-list ))
     ))
@@ -210,9 +210,9 @@
 (defmethod view-draw-filled-polygon ((view view) point-sequence
 				       &optional  gstate)
   (declare (type vector point-sequence))
-  (with-vector  point-list 
+  (with-vector  point-list
     (copy-to-vector point-sequence point-list)
-    (insert-vertex point-list (vertex-x point-sequence 0) (vertex-y point-sequence 0) *large-number*)
+    (insert-vertex point-list (vertex-x point-sequence 0) (vertex-y point-sequence 0) +large-number+)
   (draw-lines view (if gstate (working-gcontext view gstate) (slot-value view 'default-gcontext))
                       (view-transform-vector view point-list ) :fill-p t)))
 
@@ -232,7 +232,7 @@
 
 (defmethod view-draw-rectangle ((view view) x-min y-min width height
 			        &optional  gstate)
-  (declare (type wcoord x-min y-min width height))  
+  (declare (type wcoord x-min y-min width height))
 
   (multiple-value-setq (x-min y-min)		; Convert to view coordinates
     (transform-point view x-min y-min ))
@@ -249,13 +249,13 @@
 
 (defmethod view-draw-filled-rectangle ((view view) x-min y-min width height
 			        &optional gstate)
-  (declare (type wcoord x-min y-min width height))  
+  (declare (type wcoord x-min y-min width height))
 
   (multiple-value-setq (x-min y-min)		; Convert to view coordinates
     (transform-point view x-min y-min))
   (multiple-value-setq (width height)
     (view-scale-point view width height))
-  
+
   (WHEN (AND (valid-xcoord x-min)		; Make sure rect is within the universe
              (valid-xcoord y-min)
              (valid-xdistance width)

@@ -205,8 +205,6 @@
 ;  and the GRAPHIC is returned.
 
 (defmethod scene-insert ((scene scene) (graphic graphic) &optional pos )
-  (declare (type scene-position pos))
-
   (extent-changed scene)
   (WHEN (graphic-parent graphic)
     (scene-delete (graphic-parent graphic) graphic))	;if there is a parent remove from the elements list of that parent
@@ -235,8 +233,6 @@
 
 
 (defmethod scene-insert ((scene scene) (graphic scene) &optional pos )
-  (declare (type scene-position pos))
-
   (extent-changed scene)
   (UNLESS (EQL   scene graphic)
     (WHEN (graphic-parent graphic)

@@ -28,7 +28,7 @@
 
 (IMPORT '(int16 stringable card8 boolean) 'xlib)
 
-(DEFCONSTANT *large-number* 100000)
+(DEFCONSTANT +large-number+ 100000)
 
 (defparameter max-damage 3
   "Number of available damage rectangles")

@@ -22,9 +22,9 @@
 (in-package "PICTURES")
 
 
-(defconstant *no-storage-methods* '(font))
+(defparameter *no-storage-methods* '(font))
 
-(defconstant *symbol-values* '(:stipple :foreground :background))
+(defparameter *symbol-values* '(:stipple :foreground :background))
 
 ; - - - - - - - - embedded forms - - - - - - -
 
@@ -34,7 +34,7 @@
   (when (consp form)
     (dolist (item form form)
       (when (consp item)
-	(dolist (i item item) 
+	(dolist (i item item)
 	  (handle-embedded-forms i)))		; recurse on consp's
       ;; execute on unwind from recursion
       (cond ((make-form-p item)
@@ -46,7 +46,7 @@
 ; - - - - - - - - scanning forms for symbol values - - - - - - -
 
 (defun scan-form (form)
-  "Used by restore-graphic to scan form for the presence of particular keywords 
+  "Used by restore-graphic to scan form for the presence of particular keywords
 then prompts the user for a symbol to represent the value of the keyword."
   (dolist (f form)
     (cond ((member f *symbol-values*)
@@ -55,10 +55,10 @@ then prompts the user for a symbol to represent the value of the keyword."
 		   ;; If value saved with keyword is a number, string or a symbol that is
 		   ;; already defined, use it - otherwise prompt the user for a value.
 		   (let ((value (nth (1+ pos) form)))
-		     (unless (or (null value) 
+		     (unless (or (null value)
 				 (numberp value)
 				 (stringp value)
-				 (and (not (null value)) 
+				 (and (not (null value))
 				      (symbolp value)
 				      (not (keywordp value))
 				      (boundp value)
@@ -87,11 +87,11 @@ then prompts the user for a symbol to represent the value of the keyword."
 (defun get-defined-symbol-for (elm form)
   (let (ok s)
     (loop until ok do
-	  (setf s (prompt-user-for *query-io* 
-				   "Please enter a value for :~a in ~a" 
+	  (setf s (prompt-user-for *query-io*
+				   "Please enter a value for :~a in ~a"
 				   elm form))
 	  (cond ((or (numberp s)(stringp s)) (setf ok t))
-		((and (not (null s)) 
+		((and (not (null s))
 			(symbolp s)
 			(not (keywordp s))
 			(boundp s)
@@ -99,7 +99,3 @@ then prompts the user for a symbol to represent the value of the keyword."
 		   (setf s (symbol-value s)) (setf ok t)))
 	  )
     s))
-
-
-
-

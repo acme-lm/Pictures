@@ -25,7 +25,7 @@
 ;font families utilites
 (DEFPARAMETER default-family-name "-adobe-helvetica-medium-r-normal-*")
 
-(DEFCONSTANT minimum-font-attributes-in-a-name 1)
+(DEFCONSTANT *minimum-font-attributes-in-a-name* 1)
 
 (DEFMACRO font-size (font)
   `(+ (font-ascent ,font)(font-descent ,font)))
@@ -207,7 +207,6 @@
 
 ;get the attributes from the X11 font name
 
-(DEFCONSTANT large-number 1000)
 
 (DEFUN dash-positions (STRING &optional position-list)
   (IF (> (OR (FIRST (LAST position-list)) 0) (LENGTH string))
@@ -216,7 +215,7 @@
 				     (LIST (OR
 					     (POSITION #\- string
 						       :start (1+ (OR (FIRST (LAST position-list)) -1)))
-					     large-number))))))
+					     +large-number+))))))
 
 
 (DEFUN font-name-attribute (name attribute &optional (name-range nil))

@@ -1,148 +1,146 @@
-;;;-*- Mode:Common-Lisp; Package:PICTURES; Base:10 -*-
+;;;-*- mode:common-lisp; package:pictures; base:10 -*-
 ;;;
 ;;;
 ;;;
-;;;			 TEXAS INSTRUMENTS INCORPORATED
-;;;				  P.O. BOX 149149
-;;;			       AUSTIN, TEXAS 78714-9149
+;;;			 texas instruments incorporated
+;;;				  p.o. box 149149
+;;;			       austin, texas 78714-9149
 ;;;
-;;; Copyright (C)1987,1988,1989,1990 Texas Instruments Incorporated.
+;;; copyright (c)1987,1988,1989,1990 texas instruments incorporated.
 ;;;
-;;; Permission is granted to any individual or institution to use, copy, modify,
+;;; permission is granted to any individual or institution to use, copy, modify,
 ;;; and distribute this software, provided that this complete copyright and
 ;;; permission notice is maintained, intact, in all copies and supporting
 ;;; documentation.
 ;;;
-;;; Texas Instruments Incorporated provides this software "as is" without
+;;; texas instruments incorporated provides this software "as is" without
 ;;; express or implied warranty.
 ;;;
-;;; Authors: Delmar Hager, James Dutton, Teri Crowe
-;;; Contributors: Kerry Kimbrough, Patrick Hogan, Eric Mielke
+;;; authors: delmar hager, james dutton, teri crowe
+;;; contributors: kerry kimbrough, patrick hogan, eric mielke
 
-(in-package "PICTURES")
-
-
-(DEFPARAMETER  *an-extent-rectangle* (make-extent-rect))
-
-;Private Macro: valid-xcoord
-;  Determine whether the given VAR is a valid coordinate for the X window system
+(in-package :pictures)
 
 
+(defparameter  *an-extent-rectangle* (make-extent-rect))
 
-;Function: make-view
-;  Return a new view object.
+;private macro: valid-xcoord
+;  determine whether the given var is a valid coordinate for the x window system
+
+
+
+;function: make-view
+;  return a new view object.
 
 (defun make-view (&rest options &key &allow-other-keys)
-  "Make a new view.
-The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-X ORIGIN-Y GRAPHIC"
+  "make a new view.
+the following keyword options are allowed: gravity resize-extent-p scale origin-x origin-y graphic"
 
 
   (apply #'make-contact 'view options))
 
-;Basic contact methods:
+;basic contact methods:
 
-
-
-(DEFUN get-contact-background (view)
-  (IF view
-       (LET ((background (contact-background view)))
-	 (COND
-	   ((NUMBERP background) background)
+(defun get-contact-background (view)
+  (if view
+       (let ((background (contact-background view)))
+	 (cond
+	   ((numberp background) background)
 	   ((pixmap-p background) 0)
-	   ((EQL background :none) 0)
-	   ((EQL background :parent-relative) (get-contact-background (contact-parent view)))))
+	   ((eql background :none) 0)
+	   ((eql background :parent-relative) (get-contact-background (contact-parent view)))))
        0))
 
-(DEFMETHOD initialize-instance :after ((view view) &key)
+(defmethod initialize-instance :after ((view view) &key)
   (with-slots (grabber-rect-transform) view
-    (SETF grabber-rect-transform (make-transform))))
+    (setf grabber-rect-transform (make-transform))))
 
-(DEFMETHOD realize :after ((view view))
+(defmethod realize :after ((view view))
 
   (with-slots (default-gcontext selection highlight-color) view
     (setf default-gcontext (create-gcontext :drawable view ))
-    (LET ((black (screen-black-pixel (contact-screen view)))
+    (let ((black (screen-black-pixel (contact-screen view)))
 	    (white (screen-white-pixel (contact-screen view)))
 	    (background (get-contact-background view)))
 
-	(IF
-	  (EQL  background black)
-	    (PROGN
-	      (SETF (gcontext-foreground default-gcontext) white )
-	      (SETF (gcontext-background default-gcontext) black ))
-	    (PROGN
-	      (SETF (gcontext-foreground default-gcontext) black )
-	      (SETF (gcontext-background default-gcontext) white )))
-	(SETF highlight-color (LOGXOR (gcontext-foreground default-gcontext)(gcontext-background default-gcontext)))
+	(if
+	  (eql  background black)
+	    (progn
+	      (setf (gcontext-foreground default-gcontext) white )
+	      (setf (gcontext-background default-gcontext) black ))
+	    (progn
+	      (setf (gcontext-foreground default-gcontext) black )
+	      (setf (gcontext-background default-gcontext) white )))
+	(setf highlight-color (logxor (gcontext-foreground default-gcontext)(gcontext-background default-gcontext)))
 
 
       )
 
-    (LET ((selection-scene (make-selection-scene)))
-      (SETF (graphic-view selection-scene)  view)	;attach the view-selection to a view
-      (SETF (view-selection-scene view) selection-scene)
-      (DOTIMES (place 10)
+    (let ((selection-scene (make-selection-scene)))
+      (setf (graphic-view selection-scene)  view)	;attach the view-selection to a view
+      (setf (view-selection-scene view) selection-scene)
+      (dotimes (place 10)
 	(scene-insert selection-scene (make-grabber-rect view :parent selection-scene
 							 :highlight (view-highlight-color view)))
 	)
       (with-slots (elements parent) selection-scene
-	(SETF (FILL-POINTER elements) 0)
-	(SETF parent nil))
+	(setf (fill-pointer elements) 0)
+	(setf parent nil))
 
       (with-slots (view-graphic) view
-	(UNLESS view-graphic
-	  (SETF view-graphic (make-scene :sensitivity :subselectable))
-	  (SETF (graphic-view view-graphic) view))))))
+	(unless view-graphic
+	  (setf view-graphic (make-scene :sensitivity :subselectable))
+	  (setf (graphic-view view-graphic) view))))))
 
 
 
-(DEFMETHOD resize :around ((view view) width height border-width)
+(defmethod resize :around ((view view) width height border-width)
   (with-slots (origin-x origin-y gravity ) view
-     (MULTIPLE-VALUE-BIND (gravity-x gravity-y) (gravity-point view gravity)
+     (multiple-value-bind (gravity-x gravity-y) (gravity-point view gravity)
 	(call-next-method)
-	(MULTIPLE-VALUE-BIND (new-gravity-x new-gravity-y)(gravity-point view gravity)
-	  (SETF origin-x (- origin-x (- new-gravity-x gravity-x)))
-	  (SETF origin-y (- origin-y (- new-gravity-y gravity-y)))))))
+	(multiple-value-bind (new-gravity-x new-gravity-y)(gravity-point view gravity)
+	  (setf origin-x (- origin-x (- new-gravity-x gravity-x)))
+	  (setf origin-y (- origin-y (- new-gravity-y gravity-y)))))))
 
-;Method: display
-;  Display the view contact after an exposure, etc.
+;method: display
+;  display the view contact after an exposure, etc.
 
 (defmethod display ((view view) &optional (x 0) (y 0) (width (contact-width view))
 		     (height (contact-height view)) &key)
 
   (with-slots (view-graphic damage-count origin-x origin-y  (contact-height height) default-gcontext gcontext) view
-    (LET ((scale-x (view-scale-x view))
+    (let ((scale-x (view-scale-x view))
 	  (scale-y (view-scale-y view))
 	  (scale (view-scale view))
 	  (pixel (view-pixel-size view)))
 
     (when view-graphic
-      (IF (AND (= x 0) (= y 0) (= width (contact-width view)) (= height (contact-height view)))
-	  (PROGN
-	    (SETF damage-count 0)
+      (if (and (= x 0) (= y 0) (= width (contact-width view)) (= height (contact-height view)))
+	  (progn
+	    (setf damage-count 0)
 	    (refresh-view view))
 	  (progn
-	    (view-damage view	; Notify damage control
+	    (view-damage view	; notify damage control
 			 (+ origin-x (- pixel) (/ x scale-x))
 			 (+ origin-y (- pixel) (/ (- contact-height y height) scale-y))
 			 (float (+ (/ width scale)  pixel))
 			 (float (+ (/ height scale) pixel)))
-	    (repair-view view)))))))	; Go repair the damage
+	    (repair-view view)))))))	; go repair the damage
 
-;View Attribute Methods:
+;view attribute methods:
 (defmethod gravity-point ((view view) gravity)
   (declare (type (member :northwest :north  :northeast
                          :west      :center :east
                          :southwest :south  :southeast)
                  gravity))
-    (let* ((extent (world-extent view))			; Get the extent
+    (let* ((extent (world-extent view))			; get the extent
            (xmin (extent-rect-xmin extent))
            (xmax (extent-rect-xmax extent))
            (ymin (extent-rect-ymin extent))
            (ymax (extent-rect-ymax extent))
-           (xmid (/ (+ xmin xmax) 2.0))			; Compute mid points
+           (xmid (/ (+ xmin xmax) 2.0))			; compute mid points
            (ymid (/ (+ ymin ymax) 2.0)))
-      (case gravity					; Return the appropriate coord
+      (case gravity					; return the appropriate coord
         (:northwest	(values xmin ymax))
         (:north		(values xmid ymax))
         (:northeast	(values xmax ymax))
@@ -154,14 +152,14 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
         (:southeast	(values xmax ymin)))))
 
 
-(DEFMETHOD view-orientation ((view view) &key (x 1) (y 1))
-  (SETF (view-scale-x  view) (* (SIGNUM x) (view-scale-x view))
-	(view-scale-y  view) (* (SIGNUM y) (view-scale-y view))
-	(slot-value (grabber-rect-transform view) 't11) (* (SIGNUM x) (slot-value (grabber-rect-transform view) 't11) )
-	(slot-value (grabber-rect-transform view) 't22) (* (SIGNUM x) (slot-value (grabber-rect-transform view) 't22) )))
+(defmethod view-orientation ((view view) &key (x 1) (y 1))
+  (setf (view-scale-x  view) (* (signum x) (view-scale-x view))
+	(view-scale-y  view) (* (signum y) (view-scale-y view))
+	(slot-value (grabber-rect-transform view) 't11) (* (signum x) (slot-value (grabber-rect-transform view) 't11) )
+	(slot-value (grabber-rect-transform view) 't22) (* (signum x) (slot-value (grabber-rect-transform view) 't22) )))
 
-;Method: view-gravity
-;  Returns or changes the current VIEW-GRAVITY.  The view-gravity is the
+;method: view-gravity
+;  returns or changes the current view-gravity.  the view-gravity is the
 ;  alignment point of the graphic's bounding rectangle that remains fixed (in
 ;  world coordinates) after the view window is resized.
 
@@ -178,22 +176,22 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
     (setf view-gravity gravity)))
 
 
-(DEFMETHOD view-scale ((view view))
-  (ABS (view-scale-x view)))
+(defmethod view-scale ((view view))
+  (abs (view-scale-x view)))
 
-(DEFMETHOD (SETF view-scale) (x (view view))
-  (MULTIPLE-VALUE-BIND (pan-x pan-y) (gravity-point view (view-gravity view))
+(defmethod (setf view-scale) (x (view view))
+  (multiple-value-bind (pan-x pan-y) (gravity-point view (view-gravity view))
 
-    (SETF (view-scale-x view) (* (SIGNUM (view-scale-x view)) x)
-	  (view-scale-y view) (* (SIGNUM (view-scale-y view)) x)
-	  (slot-value (grabber-rect-transform view) 't11) (* (SIGNUM (view-scale-x view)) (/ 1 x) )
-	  (slot-value (grabber-rect-transform view) 't22) (* (SIGNUM (view-scale-y view)) (/ 1 x) ))
+    (setf (view-scale-x view) (* (signum (view-scale-x view)) x)
+	  (view-scale-y view) (* (signum (view-scale-y view)) x)
+	  (slot-value (grabber-rect-transform view) 't11) (* (signum (view-scale-x view)) (/ 1 x) )
+	  (slot-value (grabber-rect-transform view) 't22) (* (signum (view-scale-y view)) (/ 1 x) ))
     (view-pan view pan-x pan-y))
   x)
 
-;Method: view-pan
-;  Change the VIEW so that the given point (X, Y) (in world coordinates) is located
-;  according to the given ALIGN point of the view window.
+;method: view-pan
+;  change the view so that the given point (x, y) (in world coordinates) is located
+;  according to the given align point of the view window.
 
 (defmethod view-pan ((view view) x y &optional (gravity (view-gravity view)))
   (declare (type (member :northwest :north  :northeast
@@ -230,12 +228,12 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
                               origin-y y))))))
 
 
-(DEFMETHOD view-show-world ((view view))
+(defmethod view-show-world ((view view))
 
-  (LET ((extent (world-extent (view-graphic view))))
-    (UNLESS (= (- (extent-rect-xmax extent)(extent-rect-xmin extent))
+  (let ((extent (world-extent (view-graphic view))))
+    (unless (= (- (extent-rect-xmax extent)(extent-rect-xmin extent))
 	       (- (extent-rect-ymax extent) (extent-rect-ymin extent)) 0)
-      (SETF (view-scale view) (MIN (/ (contact-width view)
+      (setf (view-scale view) (min (/ (contact-width view)
 				      (- (extent-rect-xmax extent)(extent-rect-xmin extent)))
 				   (/ (contact-height view)
 				      (- (extent-rect-ymax extent) (extent-rect-ymin extent))))))
@@ -245,63 +243,63 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 
 
 
-(DEFMETHOD view-show-region ((view view) extent)
-  (UNLESS (= (- (extent-rect-xmax extent)(extent-rect-xmin extent))
+(defmethod view-show-region ((view view) extent)
+  (unless (= (- (extent-rect-xmax extent)(extent-rect-xmin extent))
 	     (- (extent-rect-ymax extent) (extent-rect-ymin extent)) 0)
 
-    (SETF (view-scale view) (MIN (/ (contact-width view)
+    (setf (view-scale view) (min (/ (contact-width view)
 				  (- (extent-rect-xmax extent)(extent-rect-xmin extent)))
 			       (/ (contact-height view)
 				  (- (extent-rect-ymax extent) (extent-rect-ymin extent))))))
 
-  (LET*
+  (let*
     ((extent-xmin (extent-rect-xmin extent))
      (extent-ymin (extent-rect-ymin extent))
      (extent-width (- (extent-rect-xmax extent)(extent-rect-xmin extent)) )
      (extent-height (-  (extent-rect-ymax extent)(extent-rect-ymin extent))))
-    (MULTIPLE-VALUE-BIND (x y) (CASE (view-gravity view)
+    (multiple-value-bind (x y) (case (view-gravity view)
 
-				 (:southwest  (VALUES  extent-xmin
+				 (:southwest  (values  extent-xmin
 						       extent-ymin  ))
-				 (:northwest  (VALUES  extent-xmin
+				 (:northwest  (values  extent-xmin
 						       (+ extent-ymin  extent-height) ))
-				 (:south      (VALUES  (+ extent-xmin  (/ extent-width 2.0))
+				 (:south      (values  (+ extent-xmin  (/ extent-width 2.0))
 						       extent-ymin))
-				 (:north      (VALUES  (+ extent-xmin  (/ extent-width 2.0))
+				 (:north      (values  (+ extent-xmin  (/ extent-width 2.0))
 						       (+ extent-ymin  extent-height)))
-				 (:west       (VALUES  extent-xmin
+				 (:west       (values  extent-xmin
 						       (+ extent-ymin  (/ extent-height 2.0))))
-				 (:center     (VALUES  (+ extent-xmin  (/ extent-width 2.0))
+				 (:center     (values  (+ extent-xmin  (/ extent-width 2.0))
 						       (+ extent-ymin  (/ extent-height 2.0))))
-				 (:southeast  (VALUES  (+ extent-xmin extent-width)
+				 (:southeast  (values  (+ extent-xmin extent-width)
 						       extent-ymin))
-				 (:northeast  (VALUES  (+ extent-xmin extent-width)
+				 (:northeast  (values  (+ extent-xmin extent-width)
 						       (+ extent-ymin  extent-height)))
-				 (:east       (VALUES  (+ extent-xmin extent-width)
+				 (:east       (values  (+ extent-xmin extent-width)
 						       (+ extent-ymin  (/ extent-height 2.0))))
-				 (t           (VALUES   extent-xmin
+				 (t           (values   extent-xmin
 							extent-ymin)))
       (view-pan view x y))
 
     ))
 
-;Method: view-damage
-;  Records a damaged region of the VIEW for later repair. The DAMAGED-REGION
+;method: view-damage
+;  records a damaged region of the view for later repair. the damaged-region
 ;  contains either a single graphic object (in which case the damaged region is
 ;  given by the object's extent) or a world coordinate list of the form
 ;  (min-x min-y width height).
 
 (defmethod view-damage ((view view) &rest damaged-region)
   (with-slots (damage-count damage) view
-    (let ((new-damage (make-extent-rect))	; Compute damage extent rectangle
+    (let ((new-damage (make-extent-rect))	; compute damage extent rectangle
 	  (view-extent (world-extent view))
           min-union max-intersect
           min-union-area
           (max-intersect-area 0))
       (if (typep (car damaged-region) 'graphic)
-	  (PROGN
-	    (UNLESS (extent-valid-p (CAR damaged-region))
-	      (graphic-extent (CAR damaged-region)))
+	  (progn
+	    (unless (extent-valid-p (car damaged-region))
+	      (graphic-extent (car damaged-region)))
 	    (world-extent (car damaged-region) new-damage))
 
           (setf (extent-rect-xmin new-damage) (first  damaged-region)
@@ -310,16 +308,16 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 						 (third  damaged-region))
 		(extent-rect-ymax new-damage) (+ (second damaged-region)
 						 (fourth damaged-region))))
-      (WHEN
+      (when
 	(not (or
 		   (> (extent-rect-xmin new-damage) (extent-rect-xmax view-extent))
 		   (> (extent-rect-ymin new-damage) (extent-rect-ymax view-extent))
 		   (< (extent-rect-xmax new-damage) (extent-rect-xmin view-extent))
 		   (< (extent-rect-ymax new-damage) (extent-rect-ymin view-extent))))
 
-	(dotimes (i damage-count)		; Calculate min-union and max-intersect
-	  (let ((union-area     (rect-union new-damage (AREF damage i)))
-		(intersect-area (rect-intersect new-damage (AREF damage i))))
+	(dotimes (i damage-count)		; calculate min-union and max-intersect
+	  (let ((union-area     (rect-union new-damage (aref damage i)))
+		(intersect-area (rect-intersect new-damage (aref damage i))))
 
 	    (when (or (null min-union)
 		      (< union-area min-union-area))
@@ -331,22 +329,22 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 	      (setf max-intersect i))))
 
 	(cond
-	  ((> max-intersect-area 0)		; It intersected with something
-	   (rect-merge new-damage		; Use the largest such intersection
+	  ((> max-intersect-area 0)		; it intersected with something
+	   (rect-merge new-damage		; use the largest such intersection
 		       (aref damage max-intersect)))
 
-	  ((< damage-count max-damage)		; No intersection, room for more?
-	   (incf damage-count)			; Yes, add it to the list
+	  ((< damage-count max-damage)		; no intersection, room for more?
+	   (incf damage-count)			; yes, add it to the list
 	   (setf (aref damage (- damage-count 1)) new-damage))
 
-	  (t					; Otherwise, just use the smallest union
+	  (t					; otherwise, just use the smallest union
 	   (rect-merge new-damage
 		       (aref damage min-union))))))))
 
 
-;Method: view-damaged-p
-;  Returns true if there are damaged regions to repair. May be used with SETF to
-;  reset the VIEW's damage. If the new value is false, then any previous damage
+;method: view-damaged-p
+;  returns true if there are damaged regions to repair. may be used with setf to
+;  reset the view's damage. if the new value is false, then any previous damage
 ;  is ignored; otherwise, the new value is ignored.
 
 (defmethod view-damaged-p ((view view))
@@ -364,8 +362,8 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
     (unless damaged (setf damage-count 0))))
 
 
-;Method: view-graphic
-;  Returns or changes the SCENE associated with the given VIEW.
+;method: view-graphic
+;  returns or changes the scene associated with the given view.
 
 
 
@@ -373,28 +371,28 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
   (declare (type (or null graphic) view-graphic))
 
   (with-slots ((graphic view-graphic) )  view
-    (SETF graphic view-graphic)
+    (setf graphic view-graphic)
     (with-slots (views) view-graphic
       (push view views))))
 
 
-;Method: view-pixel-size
-;  Return the world-coordinate size of a pixel for the given VIEW.
+;method: view-pixel-size
+;  return the world-coordinate size of a pixel for the given view.
 
 (defmethod view-pixel-size ((view view))
 
 
-  (LET ( (scale (view-scale view)))
+  (let ( (scale (view-scale view)))
     (/ 1 scale)))
 
 
-;Method: refresh-view
-;  Redraws the entire VIEW scene and clears any damages.
+;method: refresh-view
+;  redraws the entire view scene and clears any damages.
 
 (defmethod refresh-view ((view view))
 
   (with-slots (view-graphic origin-x origin-y width height  damage-count) view
-    (LET ((scale-x (view-scale-x view))
+    (let ((scale-x (view-scale-x view))
 	  (scale-y (view-scale-y view)))
       (clear-area view)
       (display-force-output (contact-display view))
@@ -407,55 +405,55 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 	))
     ))
 
-(DEFMETHOD refresh-view :after ((view view))
+(defmethod refresh-view :after ((view view))
       (draw-graphic (view-selection-scene view) view)
  )
 
-;Method: repair-view
-;  Redraws any damaged regions in the VIEW and clears any damages.
+;method: repair-view
+;  redraws any damaged regions in the view and clears any damages.
 
 (defmethod repair-view ((view view))
 
   (with-slots (damage-count damage view-graphic default-gcontext selection) view
-   (dotimes (i damage-count)				; For each damage rectangle
-      (let ((xmin (extent-rect-xmin (ELT damage i)))	; Store corners locally
-            (ymin (extent-rect-ymin (ELT damage i)))
-            (xmax (extent-rect-xmax (ELT damage i)))
-            (ymax (extent-rect-ymax (ELT damage i)))
+   (dotimes (i damage-count)				; for each damage rectangle
+      (let ((xmin (extent-rect-xmin (elt damage i)))	; store corners locally
+            (ymin (extent-rect-ymin (elt damage i)))
+            (xmax (extent-rect-xmax (elt damage i)))
+            (ymax (extent-rect-ymax (elt damage i)))
             (pixel (view-pixel-size view)))
-      (multiple-value-bind (clip-xmin clip-ymin)	; Compute clipping rectangle
+      (multiple-value-bind (clip-xmin clip-ymin)	; compute clipping rectangle
           (transform-point view xmin ymin)
         (multiple-value-bind (clip-xmax clip-ymax)
             (transform-point view xmax ymax)
-	  (WHEN (< clip-xmax clip-xmin)
+	  (when (< clip-xmax clip-xmin)
 	    (rotatef clip-xmin clip-xmax))
-	  (WHEN (< clip-ymax clip-ymin)
-	    (rotatef clip-ymin clip-ymax))			; View coordinates are third quadrant
+	  (when (< clip-ymax clip-ymin)
+	    (rotatef clip-ymin clip-ymax))			; view coordinates are third quadrant
 
           (clear-area view
                       :x clip-xmin
                       :y clip-ymin
                       :width  (- clip-xmax clip-xmin -1)
                       :height (- clip-ymax clip-ymin -1))
-          (draw-graphic-clipped view-graphic view		; Draw view-graphic within damaged area
+          (draw-graphic-clipped view-graphic view		; draw view-graphic within damaged area
                         (- xmin (* 2 pixel))
                         (- ymin (* 2 pixel))
                         (- xmax xmin (- (* 4 pixel)))
                         (- ymax ymin (- (* 4 pixel))))
           (display-force-output (contact-display view))
-          (setf (gcontext-clip-mask default-gcontext)	; Get rid of clip-mask
+          (setf (gcontext-clip-mask default-gcontext)	; get rid of clip-mask
                 :none)))))
 
-    (setf damage-count 0))				; Clear the damages
-  (draw-graphic (view-selection-scene view) view)		; Draw the highlight objects
+    (setf damage-count 0))				; clear the damages
+  (draw-graphic (view-selection-scene view) view)		; draw the highlight objects
   )
 
 
 
 
-;Method: view-scale-point
-;  Convert the given X-DISTANCE and Y-DISTANCE to equivalent distances in the
-;  VIEW coordinate system.  If GRAPHIC-WORLD-TRANSFORM is given, apply it to the
+;method: view-scale-point
+;  convert the given x-distance and y-distance to equivalent distances in the
+;  view coordinate system.  if graphic-world-transform is given, apply it to the
 ;  distances before converting to view coordinates.
 
 (defmethod view-scale-point ((view view) x-distance y-distance
@@ -464,7 +462,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 
 
   (with-slots ( height) view
-    (LET ((scale-x (view-scale-x view))
+    (let ((scale-x (view-scale-x view))
 	  (scale-y (view-scale-y view)))
     (multiple-value-bind (world-x world-y)
         (scale-point graphic-world-transform x-distance y-distance)
@@ -472,9 +470,9 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
               (floor (* world-y scale-y)))))))
 
 
-;Method: transform-point
-;  Convert the given X and Y object coordinates to view coordinates for the
-;  given VIEW.  If GRAPHIC-WORLD-TRANSFORM is given, apply it to the point before
+;method: transform-point
+;  convert the given x and y object coordinates to view coordinates for the
+;  given view.  if graphic-world-transform is given, apply it to the point before
 ;  converting to view coordinates.
 (defmethod transform-point ((view view) x y )
 
@@ -482,7 +480,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
   (with-slots (origin-x origin-y scale-x scale-y height) view
 
       (values (floor (* (- x origin-x) scale-x))
-              (FLOOR (- height  (* (- y origin-y) scale-y))))))
+              (floor (- height  (* (- y origin-y) scale-y))))))
 
 (defmethod transform-x ((view view) x  )
 
@@ -494,25 +492,25 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
   (with-slots (origin-x origin-y scale-y height) view
     (floor (- height (* (- y origin-y) scale-y)))))
 
-(DEFMETHOD view-transform-vector ((view view) vertices &optional round)
+(defmethod view-transform-vector ((view view) vertices &optional round)
   "this function destructively changes the value of vertices by applying the view transform to them"
   (with-slots (origin-x origin-y scale-x scale-y height) view
-    (IF round
-	(DO ((i 0 (+ i 2)))
-	    ((>= i (LENGTH vertices)))
-	  (SETF (elt vertices i) (round (* (- (ELT vertices i) origin-x) scale-x)))
-	  (SETF (ELT vertices (1+ i))       (- height (round (* (- (ELT vertices (1+ i)) origin-y) scale-y)))))
+    (if round
+	(do ((i 0 (+ i 2)))
+	    ((>= i (length vertices)))
+	  (setf (elt vertices i) (round (* (- (elt vertices i) origin-x) scale-x)))
+	  (setf (elt vertices (1+ i))       (- height (round (* (- (elt vertices (1+ i)) origin-y) scale-y)))))
 
-	(DO ((i 0 (+ i 2)))
-	    ((>= i (LENGTH vertices)))
-	  (SETF (elt vertices i) (floor (* (- (ELT vertices i) origin-x) scale-x)))
-	  (SETF (ELT vertices (1+ i)) (FLOOR (- height  (* (- (ELT vertices (1+ i)) origin-y) scale-y))))))
-    (VALUES vertices)))
+	(do ((i 0 (+ i 2)))
+	    ((>= i (length vertices)))
+	  (setf (elt vertices i) (floor (* (- (elt vertices i) origin-x) scale-x)))
+	  (setf (elt vertices (1+ i)) (floor (- height  (* (- (elt vertices (1+ i)) origin-y) scale-y))))))
+    (values vertices)))
 
 
 (defmethod view-untransform-point ((view view) window-x  window-y)
 
-  (VALUES
+  (values
     (+ (origin-x view) (/ window-x (view-scale-x view)))		;change to world coordinates
     (- (+ (origin-y view) (/ (contact-height view) (view-scale-y view)))
        (/ window-y (view-scale-y view))))  ;change from 4th quadrant view
@@ -520,7 +518,7 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 
 (defmethod untransform-point ((view view) window-x  window-y)
 
-  (VALUES
+  (values
     (+ (origin-x view) (/ window-x (view-scale-x view)))		;change to world coordinates
     (- (+ (origin-y view) (/ (contact-height view) (view-scale-y view)))
        (/ window-y (view-scale-y view))))  ;change from 4th quadrant view
@@ -528,54 +526,54 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 
 
 (defmethod view-untransform-x ((view view) window-x )
-  						;change to X world coordinates
+  						;change to x world coordinates
     (+ (origin-x view) (/ window-x (view-scale-x view)))			;change from 4th quadrant view coordinates
     )									;to 1st quadrant world coordinate
 
 
 (defmethod view-untransform-y ((view view) window-y )
 
-    (- (+ (origin-y view) (/ (contact-height view) (view-scale-y view)))	;change to Y world coordinates
+    (- (+ (origin-y view) (/ (contact-height view) (view-scale-y view)))	;change to y world coordinates
        (/ window-y (view-scale-y view))))					;change from 4th quadrant view coordinates
 
 
 
 
-;Method: view-zoom
-;  Change the scale of the VIEW. The horizontal and vertical scale are changed
-;  uniformly. If ABSOLUTE-P is true, then SCALE is an absolute scale factor;
-;  otherwise, SCALE is multiplied with the current scale to form the new scale.
-;  FIXED-POINT is a point in the view that will remain fixed after the scale is
-;  performed.  Any of the nine possible alignment points may be specified and
+;method: view-zoom
+;  change the scale of the view. the horizontal and vertical scale are changed
+;  uniformly. if absolute-p is true, then scale is an absolute scale factor;
+;  otherwise, scale is multiplied with the current scale to form the new scale.
+;  fixed-point is a point in the view that will remain fixed after the scale is
+;  performed.  any of the nine possible alignment points may be specified and
 ;  the default is :southwest.
 
 (defmethod view-zoom ((view view) scale &key  (absolute-p nil) (fixed-point :southwest))
-  (declare (type (AND number (satisfies plusp)) scale))
+  (declare (type (and number (satisfies plusp)) scale))
   (declare (type boolean absolute-p))
-  (declare (type (OR list (member :northwest :north  :northeast
+  (declare (type (or list (member :northwest :north  :northeast
                          :west      :center :east
                          :southwest :south  :southeast))
                  fixed-point))
-  (LET (fixed-point-x fixed-point-y)
-    (IF (LISTP fixed-point)
-	(PROGN
-	  (SETF fixed-point-x (FIRST fixed-point))
-	  (SETF fixed-point-y (SECOND fixed-point)))
+  (let (fixed-point-x fixed-point-y)
+    (if (listp fixed-point)
+	(progn
+	  (setf fixed-point-x (first fixed-point))
+	  (setf fixed-point-y (second fixed-point)))
 
-	(MULTIPLE-VALUE-SETQ (fixed-point-x fixed-point-y)	; Remember the fixed point
+	(multiple-value-setq (fixed-point-x fixed-point-y)	; remember the fixed point
 	  (gravity-point view fixed-point)))
       (if absolute-p
-          (setf (view-scale view)  scale)		;   Absolutely
-          (setf (view-scale view ) (* (view-scale view) scale)))	;   Relatively
-;    (unless (eq fixed-point :southwest)			; Pan back to the fixed point
-      (view-pan view fixed-point-x fixed-point-y	;   If we need to
+          (setf (view-scale view)  scale)		;   absolutely
+          (setf (view-scale view ) (* (view-scale view) scale)))	;   relatively
+;    (unless (eq fixed-point :southwest)			; pan back to the fixed point
+      (view-pan view fixed-point-x fixed-point-y	;   if we need to
                 fixed-point)))
 
 
-;Method: world-extent
-;  Return the extent of the given VIEW in world coordinates.  A nil value means that
-;  the extent is undefined.  If RESULT-EXTENT is provided, it is used to store the result
-;  extent.  Otherwise, a new extent-rect is created and returned.
+;method: world-extent
+;  return the extent of the given view in world coordinates.  a nil value means that
+;  the extent is undefined.  if result-extent is provided, it is used to store the result
+;  extent.  otherwise, a new extent-rect is created and returned.
 
 (defmethod world-extent ((view view) &optional result-extent)
   (declare (type (or null extent-rect) result-extent))
@@ -595,8 +593,8 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
 
 
 
-;Private Function: rect-union
-;  Return the area of the union of RECT1 and RECT2.
+;private function: rect-union
+;  return the area of the union of rect1 and rect2.
 
 (defun rect-union (rect1 rect2)
   (declare (type extent-rect rect1 rect2))
@@ -610,8 +608,8 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
         (min (extent-rect-ymin rect1)
              (extent-rect-ymin rect2)))))
 
-;Private Function: rect-intersect
-;  Return the area of the intersection of RECT1 and RECT2.
+;private function: rect-intersect
+;  return the area of the intersection of rect1 and rect2.
 
 (defun rect-intersect (rect1 rect2)
   (declare (type extent-rect rect1 rect2))
@@ -630,8 +628,8 @@ The following keyword OPTIONS are allowed: GRAVITY RESIZE-EXTENT-P SCALE ORIGIN-
         0)))
 
 
-;Private Function: rect-merge
-;  Merge (union) RECT1 and RECT2 and modify RECT2 to contain the result.
+;private function: rect-merge
+;  merge (union) rect1 and rect2 and modify rect2 to contain the result.
 
 (defun rect-merge (rect1 rect2)
   (declare (type extent-rect rect1 rect2))
