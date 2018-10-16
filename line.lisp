@@ -55,12 +55,8 @@
 ;  Return a new line object whose end points are (START-X, START-Y) and
 ;  (END-X, END-Y).
 
-(defun make-line (start-x start-y end-x end-y
-                    &rest options
-                    )
-  (declare (type wcoord start-x start-y end-x end-y))
-
-
+(defun make-line (start-x start-y end-x end-y &rest options)
+  ;; (declare (type wcoord start-x start-y end-x end-y))
   (apply #'make-instance 'line
          :start-x start-x
          :start-y start-y
@@ -68,17 +64,12 @@
          :end-y   end-y
          options))
 
-
-;Method: line-start-point
-;  Return the coordinates of the START-POINT of the given LINE.
+;; Method: line-start-point
+;;  Return the coordinates of the START-POINT of the given LINE.
 
 (defmethod line-start-point ((line line))
-
-
   (with-slots (start-x start-y) line
     (values start-x start-y)))
-
-
 
 (defmethod (setf line-start-point-x) :after (start-x (line line))
   (declare (type wcoord start-x))

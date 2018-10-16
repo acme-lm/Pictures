@@ -25,73 +25,50 @@
 ;Circle Class Definition:
 
 (defclass circle (extent-cache graphic)
-  (
-   (center-x	:type		wcoord
-                :initarg	:center-x
-		:accessor       circle-center-x
-		:documentation "x-coordinate of the center")
-
-   (center-y	:type		wcoord
-                :initarg	:center-y
-		:accessor       circle-center-y
-		:documentation "y-coordinate of the center")
-
-   (radius	:type		wcoord
-                :initarg	:radius
-		:accessor       circle-radius
-		:documentation	"Radius of the circle")
-
-   )
+  ((center-x ;; :type wcoord
+    :initarg :center-x
+    :accessor circle-center-x
+    :documentation "x-coordinate of the center")
+   (center-y ;; :type wcoord
+    :initarg	:center-y
+    :accessor       circle-center-y
+    :documentation "y-coordinate of the center")
+   (radius ;; :type wcoord
+    :initarg	:radius
+    :accessor       circle-radius
+    :documentation	"Radius of the circle"))
   (:documentation "A graphic that represents a circle in object coordinates"))
 
-
-;Filled-Circle Class Definition:
-
-(defclass filled-circle ( circle)
+;; Filled-Circle Class Definition:
+(defclass filled-circle (circle)
   ()
   (:documentation "Filled circle class in pictures"))
 
-
-;Filled-Circle-Edge Class Definition:
-
+;; Filled-Circle-Edge Class Definition:
 (defclass filled-circle-edge ( circle edge)
   ()
   (:documentation "Filled circle edge class in pictures"))
 
-
-;Function: make-circle
-;  Return a new circle object with the given CENTER and RADIUS.
-
-(defun make-circle (center-x center-y radius
-                    &rest options
-                    )
-  "Make a circle with the center coordinate of (CENTER-X CENTER-Y) and RADIUS.
-The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
-
-  (declare (type wcoord center-x center-y radius))
-
-
+;; Function: make-circle
+;; Return a new circle object with the given CENTER and RADIUS.
+(defun make-circle (center-x center-y radius &rest options)
+  "Make a circle with the center coordinate of (center-x center-y) and
+   radius. the following keyword options are allowed: gstate parent
+   senesitivity transform plist"
+  ;; (declare (type wcoord center-x center-y radius))
   (apply #'make-instance 'circle
          :center-x center-x
          :center-y center-y
          :radius   radius
-         options)
-  )
+         options))
 
-
-
-;Function: make-filled-circle
-;  Return a new filled-circle object with the given CENTER and RADIUS.
-
-(defun make-filled-circle (center-x center-y radius
-                            &rest options
-                            )
-  "Make a filled-circle with the center coordinate of (CENTER-X CENTER-Y) and RADIUS.
-The following keyword OPTIONS are allowed: GSTATE PARENT SENESITIVITY TRANSFORM PLIST"
-
-  (declare (type wcoord center-x center-y radius))
-
-
+;; Function: make-filled-circle
+;; Return a new filled-circle object with the given CENTER and RADIUS.
+(defun make-filled-circle (center-x center-y radius &rest options)
+  "Make a filled-circle with the center coordinate of (center-x
+   center-y) and radius. the following keyword options are allowed:
+   gstate parent senesitivity transform plist"
+  ;; (declare (type wcoord center-x center-y radius))
   (apply #'make-instance 'filled-circle
          :center-x center-x
          :center-y center-y

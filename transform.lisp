@@ -238,18 +238,15 @@
   )						;  Yes, old-x, old-y
 
 (DEFMETHOD  transform-point (( transform t) x y)
-  (declare (type (or null transform) transform))
-  (declare (type wcoord x y))
-  				; new-y
-      (values x y))
+  ;; (declare (type (or null transform) transform))
+  ;; (declare (type wcoord x y))
+  ;; new-y
+  (values x y))
 
-;Function: transform-point-seq
-;  Destructively changes the point-seq by applying TRANSFORM to the
-;  given points.
-
-
+;; Function: transform-point-seq
+;; Destructively changes the point-seq by applying TRANSFORM to the
+;; given points.
 (defun transform-point-seq (transform  point-vector &optional (result point-vector))
-
   (declare (type (or null transform) transform))
   (declare (type (or null vector) point-vector ))
   (with-vector transformed-vector

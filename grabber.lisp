@@ -1,23 +1,23 @@
 ;;;-*- mode:common-lisp; package:pictures; base:10 -*-
-;;;
-;;;
-;;;
-;;;			 texas instruments incorporated
-;;;				  p.o. box 149149
-;;;			       austin, texas 78714-9149
+
+
+;;; Texas Instruments Incorporated
+;;; PO Box 149149
+;;; Austin, Texas 78714-9149
 ;;;
 ;;; copyright (c)1987,1988,1989,1990 texas instruments incorporated.
 ;;;
-;;; permission is granted to any individual or institution to use, copy, modify,
-;;; and distribute this software, provided that this complete copyright and
-;;; permission notice is maintained, intact, in all copies and supporting
-;;; documentation.
+;;; permission is granted to any individual or institution to use,
+;;; copy, modify, and distribute this software, provided that this
+;;; complete copyright and permission notice is maintained, intact, in
+;;; all copies and supporting documentation.
 ;;;
-;;; texas instruments incorporated provides this software "as is" without
+;;; Texas instruments incorporated provides this software "as is" without
 ;;; express or implied warranty.
 ;;;
-;;; authors: delmar hager, james dutton, teri crowe
-;;; contributors: kerry kimbrough, patrick hogan, eric mielke
+;;; Authors: Delmar Hager, James Dutton, Teri Crowe
+;;; Contributors: Kerry Kimbrough, Patrick hogan, Eric Mielke
+
 
 (in-package :pictures)
 
@@ -70,13 +70,13 @@
     :documentation "the grabber that is opposite of this instance of grabber"))
   (:documentation "this is special class of filled rectangle to represent the grabbers of the extent rectangle"))
 
-(defmethod scene-insert  ((scene selection-scene) graphic &optional pos )
- (declare (ignore pos))
-
-  (with-slots (elements parent) scene                           ;to a scene
- 	 (vector-push-extend graphic elements 1) ;insert after last graphic
-	 )			; set its new parent
- graphic)
+(defmethod scene-insert ((scene selection-scene) graphic &optional pos )
+  (declare (ignore pos))
+  ;; To a scene
+  (with-slots (elements parent) scene
+    ;; Insert after last graphic
+    (vector-push-extend graphic elements 1))
+  graphic)
 
 (defun  normalize-transform (transform)
   (when transform

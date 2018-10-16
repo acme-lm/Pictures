@@ -439,14 +439,11 @@
       (graphic-stack-purge *gstate-stack* graphic))))		; Notify the gstate stack
 
 
-;Method: move-transform
-;  Translate the GRAPHIC by the given distances. The new object transform is
-;  returned.
 
+;; Translate the GRAPHIC by the given distances. The new object
+;; transform is returned.
 (defmethod move-transform ((graphic graphic) delta-x delta-y)
-  (declare (type wcoord delta-x delta-y))
-
-
+  ;; (declare (type wcoord delta-x delta-y))
   (with-slots (transform) graphic
     (graphic-damage graphic)				; Damage from old graphic
     (when (null transform)				; If no transform
@@ -457,8 +454,6 @@
       (extent-changed graphic))				; Notify graphic his extent may have changed
     (graphic-damage graphic)				; Damage from new graphic
     transform))
-
-
 
 
 ;Function: repair
